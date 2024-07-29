@@ -1,0 +1,1809 @@
+ARM GAS  /tmp/ccZYoZDJ.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 23, 1
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 2
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"Soft_SPI.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.file 1 "Src/Soft_SPI.c"
+  18              		.section	.text.spi_create,"ax",%progbits
+  19              		.align	1
+  20              		.p2align 2,,3
+  21              		.global	spi_create
+  22              		.syntax unified
+  23              		.thumb
+  24              		.thumb_func
+  26              	spi_create:
+  27              	.LVL0:
+  28              	.LFB137:
+   1:Src/Soft_SPI.c **** #include "Soft_SPI.h"
+   2:Src/Soft_SPI.c **** 
+   3:Src/Soft_SPI.c **** #define PINS_PER_PORT 16
+   4:Src/Soft_SPI.c **** 
+   5:Src/Soft_SPI.c **** // Offset to get from the lower byte of the bsrr 
+   6:Src/Soft_SPI.c **** // to the higher byte
+   7:Src/Soft_SPI.c **** #define BSRR_L_TO_H_OFFSET 0x10 // 16
+   8:Src/Soft_SPI.c **** 
+   9:Src/Soft_SPI.c **** // Sets the mosi line low and waits for the data hold time
+  10:Src/Soft_SPI.c **** static inline void mosi_low(Soft_SPI* spi_struct)
+  11:Src/Soft_SPI.c **** {
+  12:Src/Soft_SPI.c ****   spi_struct->port->BSRR = (1 << (spi_struct->mosi + BSRR_L_TO_H_OFFSET));
+  13:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+  14:Src/Soft_SPI.c **** }
+  15:Src/Soft_SPI.c **** 
+  16:Src/Soft_SPI.c **** // Sets the mosi line high and waits for the data hold time
+  17:Src/Soft_SPI.c **** static inline void mosi_high(Soft_SPI* spi_struct)
+  18:Src/Soft_SPI.c **** {
+  19:Src/Soft_SPI.c ****   spi_struct->port->BSRR = (1 << spi_struct->mosi);
+  20:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+  21:Src/Soft_SPI.c **** }
+  22:Src/Soft_SPI.c **** 
+  23:Src/Soft_SPI.c **** // Sets the sck line low and waits for half a clock cycle
+  24:Src/Soft_SPI.c **** static inline void sck_low(Soft_SPI* spi_struct)
+  25:Src/Soft_SPI.c **** {
+  26:Src/Soft_SPI.c ****   spi_struct->port->BSRR = (1 << (spi_struct->sck + BSRR_L_TO_H_OFFSET));
+  27:Src/Soft_SPI.c **** }
+  28:Src/Soft_SPI.c **** 
+  29:Src/Soft_SPI.c **** // Sets the sck line high and waits for half a clock cycle
+  30:Src/Soft_SPI.c **** static inline void sck_high(Soft_SPI* spi_struct)
+ARM GAS  /tmp/ccZYoZDJ.s 			page 2
+
+
+  31:Src/Soft_SPI.c **** {
+  32:Src/Soft_SPI.c ****   spi_struct->port->BSRR = (1 << spi_struct->sck);
+  33:Src/Soft_SPI.c **** }
+  34:Src/Soft_SPI.c **** 
+  35:Src/Soft_SPI.c **** // Sets the chip select line low
+  36:Src/Soft_SPI.c **** static inline void cs_low(Soft_SPI* spi_struct)
+  37:Src/Soft_SPI.c **** {
+  38:Src/Soft_SPI.c ****   spi_struct->port->BSRR = (1 << (spi_struct->cs + BSRR_L_TO_H_OFFSET));
+  39:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+  40:Src/Soft_SPI.c **** }
+  41:Src/Soft_SPI.c **** 
+  42:Src/Soft_SPI.c **** // Sets the chip select line high
+  43:Src/Soft_SPI.c **** static inline void cs_high(Soft_SPI* spi_struct)
+  44:Src/Soft_SPI.c **** {
+  45:Src/Soft_SPI.c ****   spi_struct->port->BSRR = (1 << spi_struct->cs);
+  46:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+  47:Src/Soft_SPI.c **** }
+  48:Src/Soft_SPI.c **** 
+  49:Src/Soft_SPI.c **** // checks the state of the miso pin
+  50:Src/Soft_SPI.c **** // returns >0 if its high, returns 0 if its low
+  51:Src/Soft_SPI.c **** static uint8_t miso_state(Soft_SPI* spi_struct)
+  52:Src/Soft_SPI.c **** {
+  53:Src/Soft_SPI.c ****   uint8_t data = 0;
+  54:Src/Soft_SPI.c **** 
+  55:Src/Soft_SPI.c ****   // Fetch the lines state
+  56:Src/Soft_SPI.c ****   data = spi_struct->port->IDR & (1 << spi_struct->miso);
+  57:Src/Soft_SPI.c **** 
+  58:Src/Soft_SPI.c ****   return data;
+  59:Src/Soft_SPI.c **** }
+  60:Src/Soft_SPI.c **** 
+  61:Src/Soft_SPI.c **** Soft_SPI spi_create(GPIO_TypeDef* port, uint8_t mosi, uint8_t miso, uint8_t cs, uint8_t sck,
+  62:Src/Soft_SPI.c **** uint32_t clock_cycle_us, uint32_t data_hold_us, uint8_t mode)
+  63:Src/Soft_SPI.c **** {
+  29              		.loc 1 63 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 20, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+  64:Src/Soft_SPI.c ****   if(port == NULL)
+  34              		.loc 1 64 3 view .LVU1
+  65:Src/Soft_SPI.c ****   {
+  66:Src/Soft_SPI.c ****     ERROR_HANDLER("trying to access null pointer");
+  35              		.loc 1 66 51 view .LVU2
+  67:Src/Soft_SPI.c ****   }
+  68:Src/Soft_SPI.c ****   if(mosi >= PINS_PER_PORT || miso >= PINS_PER_PORT || cs >= PINS_PER_PORT || sck >= PINS_PER_PORT)
+  36              		.loc 1 68 3 view .LVU3
+  69:Src/Soft_SPI.c ****   {
+  70:Src/Soft_SPI.c ****     WARNING_HANDLER("Atleast one of the Soft_Spi pins are defined wrong");
+  37              		.loc 1 70 74 view .LVU4
+  71:Src/Soft_SPI.c ****   }
+  72:Src/Soft_SPI.c **** 
+  73:Src/Soft_SPI.c ****   Soft_SPI temp;
+  38              		.loc 1 73 3 view .LVU5
+  74:Src/Soft_SPI.c ****   temp.port = port;
+  39              		.loc 1 74 3 view .LVU6
+  75:Src/Soft_SPI.c ****   temp.mosi = mosi;
+  40              		.loc 1 75 3 view .LVU7
+ARM GAS  /tmp/ccZYoZDJ.s 			page 3
+
+
+  76:Src/Soft_SPI.c ****   temp.miso = miso;
+  41              		.loc 1 76 3 view .LVU8
+  77:Src/Soft_SPI.c ****   temp.cs = cs;
+  42              		.loc 1 77 3 view .LVU9
+  78:Src/Soft_SPI.c ****   temp.sck = sck;
+  79:Src/Soft_SPI.c ****   temp.clock_cycle_us = clock_cycle_us / 2;
+  80:Src/Soft_SPI.c ****   temp.data_hold_us = data_hold_us;
+  81:Src/Soft_SPI.c ****   temp.mode = mode;
+  82:Src/Soft_SPI.c **** 
+  83:Src/Soft_SPI.c ****   return temp;
+  43              		.loc 1 83 10 is_stmt 0 view .LVU10
+  44 0000 0160     		str	r1, [r0]
+  45 0002 0021     		movs	r1, #0
+  46              	.LVL1:
+  47              		.loc 1 83 10 view .LVU11
+  48 0004 62F30701 		bfi	r1, r2, #0, #8
+  49 0008 63F30F21 		bfi	r1, r3, #8, #8
+  63:Src/Soft_SPI.c ****   if(port == NULL)
+  50              		.loc 1 63 1 view .LVU12
+  51 000c 9DF80030 		ldrb	r3, [sp]	@ zero_extendqisi2
+  52              	.LVL2:
+  78:Src/Soft_SPI.c ****   temp.sck = sck;
+  53              		.loc 1 78 3 is_stmt 1 view .LVU13
+  63:Src/Soft_SPI.c ****   if(port == NULL)
+  54              		.loc 1 63 1 is_stmt 0 view .LVU14
+  55 0010 9DF81020 		ldrb	r2, [sp, #16]	@ zero_extendqisi2
+  56              	.LVL3:
+  57              		.loc 1 83 10 view .LVU15
+  58 0014 0274     		strb	r2, [r0, #16]
+  59 0016 63F31741 		bfi	r1, r3, #16, #8
+  63:Src/Soft_SPI.c ****   if(port == NULL)
+  60              		.loc 1 63 1 view .LVU16
+  61 001a 9DF80430 		ldrb	r3, [sp, #4]	@ zero_extendqisi2
+  62              	.LVL4:
+  79:Src/Soft_SPI.c ****   temp.data_hold_us = data_hold_us;
+  63              		.loc 1 79 3 is_stmt 1 view .LVU17
+  64              		.loc 1 83 10 is_stmt 0 view .LVU18
+  65 001e 63F31F61 		bfi	r1, r3, #24, #8
+  63:Src/Soft_SPI.c ****   if(port == NULL)
+  66              		.loc 1 63 1 view .LVU19
+  67 0022 029B     		ldr	r3, [sp, #8]
+  68              	.LVL5:
+  80:Src/Soft_SPI.c ****   temp.mode = mode;
+  69              		.loc 1 80 3 is_stmt 1 view .LVU20
+  70              		.loc 1 83 10 is_stmt 0 view .LVU21
+  71 0024 4160     		str	r1, [r0, #4]
+  63:Src/Soft_SPI.c ****   if(port == NULL)
+  72              		.loc 1 63 1 view .LVU22
+  73 0026 0399     		ldr	r1, [sp, #12]
+  74              	.LVL6:
+  81:Src/Soft_SPI.c **** 
+  75              		.loc 1 81 3 is_stmt 1 view .LVU23
+  76              		.loc 1 83 3 view .LVU24
+  79:Src/Soft_SPI.c ****   temp.data_hold_us = data_hold_us;
+  77              		.loc 1 79 40 is_stmt 0 view .LVU25
+  78 0028 5B08     		lsrs	r3, r3, #1
+  79              		.loc 1 83 10 view .LVU26
+ARM GAS  /tmp/ccZYoZDJ.s 			page 4
+
+
+  80 002a C0E90231 		strd	r3, r1, [r0, #8]
+  84:Src/Soft_SPI.c **** }
+  81              		.loc 1 84 1 view .LVU27
+  82 002e 7047     		bx	lr
+  83              		.cfi_endproc
+  84              	.LFE137:
+  86              		.section	.text.spi_init,"ax",%progbits
+  87              		.align	1
+  88              		.p2align 2,,3
+  89              		.global	spi_init
+  90              		.syntax unified
+  91              		.thumb
+  92              		.thumb_func
+  94              	spi_init:
+  95              	.LVL7:
+  96              	.LFB138:
+  85:Src/Soft_SPI.c **** 
+  86:Src/Soft_SPI.c **** void spi_init(Soft_SPI* spi_struct)
+  87:Src/Soft_SPI.c **** {
+  97              		.loc 1 87 1 is_stmt 1 view -0
+  98              		.cfi_startproc
+  99              		@ args = 0, pretend = 0, frame = 0
+ 100              		@ frame_needed = 0, uses_anonymous_args = 0
+  88:Src/Soft_SPI.c ****   // Setup Outputs
+  89:Src/Soft_SPI.c ****   gpio_setup_full(spi_struct->port, spi_struct->mosi, // Mosi
+ 101              		.loc 1 89 3 view .LVU29
+  87:Src/Soft_SPI.c ****   // Setup Outputs
+ 102              		.loc 1 87 1 is_stmt 0 view .LVU30
+ 103 0000 30B5     		push	{r4, r5, lr}
+ 104              	.LCFI0:
+ 105              		.cfi_def_cfa_offset 12
+ 106              		.cfi_offset 4, -12
+ 107              		.cfi_offset 5, -8
+ 108              		.cfi_offset 14, -4
+ 109 0002 0446     		mov	r4, r0
+ 110              		.loc 1 89 3 view .LVU31
+ 111 0004 0025     		movs	r5, #0
+  87:Src/Soft_SPI.c ****   // Setup Outputs
+ 112              		.loc 1 87 1 view .LVU32
+ 113 0006 83B0     		sub	sp, sp, #12
+ 114              	.LCFI1:
+ 115              		.cfi_def_cfa_offset 24
+ 116              		.loc 1 89 3 view .LVU33
+ 117 0008 0179     		ldrb	r1, [r0, #4]	@ zero_extendqisi2
+ 118 000a 0068     		ldr	r0, [r0]
+ 119              	.LVL8:
+ 120              		.loc 1 89 3 view .LVU34
+ 121 000c 2B46     		mov	r3, r5
+ 122 000e 0122     		movs	r2, #1
+ 123 0010 CDE90055 		strd	r5, r5, [sp]
+ 124 0014 FFF7FEFF 		bl	gpio_setup_full
+ 125              	.LVL9:
+  90:Src/Soft_SPI.c ****   OUTPUT, NO_PULL, PUSH_PULL, LOW_SPEED);
+  91:Src/Soft_SPI.c ****   
+  92:Src/Soft_SPI.c ****   gpio_setup_full(spi_struct->port, spi_struct->cs, // Chip select
+ 126              		.loc 1 92 3 is_stmt 1 view .LVU35
+ 127 0018 A179     		ldrb	r1, [r4, #6]	@ zero_extendqisi2
+ARM GAS  /tmp/ccZYoZDJ.s 			page 5
+
+
+ 128 001a 2068     		ldr	r0, [r4]
+ 129 001c 0122     		movs	r2, #1
+ 130 001e 2B46     		mov	r3, r5
+ 131 0020 CDE90055 		strd	r5, r5, [sp]
+ 132 0024 FFF7FEFF 		bl	gpio_setup_full
+ 133              	.LVL10:
+  93:Src/Soft_SPI.c ****   OUTPUT, NO_PULL, PUSH_PULL, LOW_SPEED);
+  94:Src/Soft_SPI.c **** 
+  95:Src/Soft_SPI.c ****   gpio_setup_full(spi_struct->port, spi_struct->sck,  // Serial Clock
+ 134              		.loc 1 95 3 view .LVU36
+ 135 0028 E179     		ldrb	r1, [r4, #7]	@ zero_extendqisi2
+ 136 002a 2068     		ldr	r0, [r4]
+ 137 002c 0122     		movs	r2, #1
+ 138 002e 2B46     		mov	r3, r5
+ 139 0030 CDE90055 		strd	r5, r5, [sp]
+ 140 0034 FFF7FEFF 		bl	gpio_setup_full
+ 141              	.LVL11:
+  96:Src/Soft_SPI.c ****   OUTPUT, NO_PULL, PUSH_PULL, LOW_SPEED);
+  97:Src/Soft_SPI.c **** 
+  98:Src/Soft_SPI.c ****   // Setup Inputs
+  99:Src/Soft_SPI.c **** 
+ 100:Src/Soft_SPI.c ****   gpio_setup_full(spi_struct->port, spi_struct->miso, // Setup Miso
+ 142              		.loc 1 100 3 view .LVU37
+ 143 0038 6179     		ldrb	r1, [r4, #5]	@ zero_extendqisi2
+ 144 003a 2068     		ldr	r0, [r4]
+ 145 003c 2B46     		mov	r3, r5
+ 146 003e 2A46     		mov	r2, r5
+ 147 0040 CDE90055 		strd	r5, r5, [sp]
+ 148 0044 FFF7FEFF 		bl	gpio_setup_full
+ 149              	.LVL12:
+ 101:Src/Soft_SPI.c ****   INPUT, NO_PULL, PUSH_PULL, LOW_SPEED);
+ 102:Src/Soft_SPI.c **** 
+ 103:Src/Soft_SPI.c ****   // Setup the Idle State
+ 104:Src/Soft_SPI.c ****   mosi_low(spi_struct);
+ 150              		.loc 1 104 3 view .LVU38
+ 151              	.LBB25:
+ 152              	.LBI25:
+  10:Src/Soft_SPI.c **** {
+ 153              		.loc 1 10 20 view .LVU39
+ 154              	.LBB26:
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 155              		.loc 1 12 3 view .LVU40
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 156              		.loc 1 12 45 is_stmt 0 view .LVU41
+ 157 0048 2379     		ldrb	r3, [r4, #4]	@ zero_extendqisi2
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 158              		.loc 1 12 13 view .LVU42
+ 159 004a 2168     		ldr	r1, [r4]
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 160              		.loc 1 12 31 view .LVU43
+ 161 004c 0122     		movs	r2, #1
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 162              		.loc 1 12 52 view .LVU44
+ 163 004e 1033     		adds	r3, r3, #16
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 164              		.loc 1 12 31 view .LVU45
+ 165 0050 02FA03F3 		lsl	r3, r2, r3
+ARM GAS  /tmp/ccZYoZDJ.s 			page 6
+
+
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 166              		.loc 1 12 26 view .LVU46
+ 167 0054 8B61     		str	r3, [r1, #24]
+ 168              	.LVL13:
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 169              		.loc 1 12 26 view .LVU47
+ 170              	.LBE26:
+ 171              	.LBE25:
+ 105:Src/Soft_SPI.c ****   cs_high(spi_struct);
+ 172              		.loc 1 105 3 is_stmt 1 view .LVU48
+ 173              	.LBB27:
+ 174              	.LBI27:
+  43:Src/Soft_SPI.c **** {
+ 175              		.loc 1 43 20 view .LVU49
+ 176              	.LBB28:
+  45:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 177              		.loc 1 45 3 view .LVU50
+  45:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 178              		.loc 1 45 44 is_stmt 0 view .LVU51
+ 179 0056 A379     		ldrb	r3, [r4, #6]	@ zero_extendqisi2
+  45:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 180              		.loc 1 45 31 view .LVU52
+ 181 0058 02FA03F3 		lsl	r3, r2, r3
+  45:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 182              		.loc 1 45 26 view .LVU53
+ 183 005c 8B61     		str	r3, [r1, #24]
+ 184              	.LVL14:
+  45:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 185              		.loc 1 45 26 view .LVU54
+ 186              	.LBE28:
+ 187              	.LBE27:
+ 106:Src/Soft_SPI.c **** 
+ 107:Src/Soft_SPI.c ****   // The clock idle state is different in different modes
+ 108:Src/Soft_SPI.c ****   if(spi_struct->mode == 0 || spi_struct->mode == 1)
+ 188              		.loc 1 108 3 is_stmt 1 view .LVU55
+ 189              		.loc 1 108 16 is_stmt 0 view .LVU56
+ 190 005e 237C     		ldrb	r3, [r4, #16]	@ zero_extendqisi2
+ 191              		.loc 1 108 5 view .LVU57
+ 192 0060 9342     		cmp	r3, r2
+ 193 0062 09D9     		bls	.L7
+ 109:Src/Soft_SPI.c ****   {
+ 110:Src/Soft_SPI.c ****     sck_low(spi_struct);
+ 111:Src/Soft_SPI.c ****   }
+ 112:Src/Soft_SPI.c ****   else if(spi_struct->mode == 2 || spi_struct->mode == 3)
+ 194              		.loc 1 112 8 is_stmt 1 view .LVU58
+ 195              		.loc 1 112 10 is_stmt 0 view .LVU59
+ 196 0064 023B     		subs	r3, r3, #2
+ 197 0066 012B     		cmp	r3, #1
+ 198 0068 01D9     		bls	.L8
+ 113:Src/Soft_SPI.c ****   {
+ 114:Src/Soft_SPI.c ****     sck_high(spi_struct);
+ 115:Src/Soft_SPI.c ****   }
+ 116:Src/Soft_SPI.c ****   
+ 117:Src/Soft_SPI.c **** }
+ 199              		.loc 1 117 1 view .LVU60
+ 200 006a 03B0     		add	sp, sp, #12
+ 201              	.LCFI2:
+ARM GAS  /tmp/ccZYoZDJ.s 			page 7
+
+
+ 202              		.cfi_remember_state
+ 203              		.cfi_def_cfa_offset 12
+ 204              		@ sp needed
+ 205 006c 30BD     		pop	{r4, r5, pc}
+ 206              	.LVL15:
+ 207              	.L8:
+ 208              	.LCFI3:
+ 209              		.cfi_restore_state
+ 114:Src/Soft_SPI.c ****   }
+ 210              		.loc 1 114 5 is_stmt 1 view .LVU61
+ 211              	.LBB29:
+ 212              	.LBI29:
+  30:Src/Soft_SPI.c **** {
+ 213              		.loc 1 30 20 view .LVU62
+ 214              	.LBB30:
+  32:Src/Soft_SPI.c **** }
+ 215              		.loc 1 32 3 view .LVU63
+  32:Src/Soft_SPI.c **** }
+ 216              		.loc 1 32 44 is_stmt 0 view .LVU64
+ 217 006e E379     		ldrb	r3, [r4, #7]	@ zero_extendqisi2
+  32:Src/Soft_SPI.c **** }
+ 218              		.loc 1 32 31 view .LVU65
+ 219 0070 9A40     		lsls	r2, r2, r3
+  32:Src/Soft_SPI.c **** }
+ 220              		.loc 1 32 26 view .LVU66
+ 221 0072 8A61     		str	r2, [r1, #24]
+ 222              	.LVL16:
+  32:Src/Soft_SPI.c **** }
+ 223              		.loc 1 32 26 view .LVU67
+ 224              	.LBE30:
+ 225              	.LBE29:
+ 226              		.loc 1 117 1 view .LVU68
+ 227 0074 03B0     		add	sp, sp, #12
+ 228              	.LCFI4:
+ 229              		.cfi_remember_state
+ 230              		.cfi_def_cfa_offset 12
+ 231              		@ sp needed
+ 232 0076 30BD     		pop	{r4, r5, pc}
+ 233              	.LVL17:
+ 234              	.L7:
+ 235              	.LCFI5:
+ 236              		.cfi_restore_state
+ 110:Src/Soft_SPI.c ****   }
+ 237              		.loc 1 110 5 is_stmt 1 view .LVU69
+ 238              	.LBB31:
+ 239              	.LBI31:
+  24:Src/Soft_SPI.c **** {
+ 240              		.loc 1 24 20 view .LVU70
+ 241              	.LBB32:
+  26:Src/Soft_SPI.c **** }
+ 242              		.loc 1 26 3 view .LVU71
+  26:Src/Soft_SPI.c **** }
+ 243              		.loc 1 26 45 is_stmt 0 view .LVU72
+ 244 0078 E379     		ldrb	r3, [r4, #7]	@ zero_extendqisi2
+  26:Src/Soft_SPI.c **** }
+ 245              		.loc 1 26 51 view .LVU73
+ 246 007a 1033     		adds	r3, r3, #16
+ARM GAS  /tmp/ccZYoZDJ.s 			page 8
+
+
+  26:Src/Soft_SPI.c **** }
+ 247              		.loc 1 26 31 view .LVU74
+ 248 007c 9A40     		lsls	r2, r2, r3
+  26:Src/Soft_SPI.c **** }
+ 249              		.loc 1 26 26 view .LVU75
+ 250 007e 8A61     		str	r2, [r1, #24]
+ 251              	.LVL18:
+  26:Src/Soft_SPI.c **** }
+ 252              		.loc 1 26 26 view .LVU76
+ 253              	.LBE32:
+ 254              	.LBE31:
+ 255              		.loc 1 117 1 view .LVU77
+ 256 0080 03B0     		add	sp, sp, #12
+ 257              	.LCFI6:
+ 258              		.cfi_def_cfa_offset 12
+ 259              		@ sp needed
+ 260 0082 30BD     		pop	{r4, r5, pc}
+ 261              		.loc 1 117 1 view .LVU78
+ 262              		.cfi_endproc
+ 263              	.LFE138:
+ 265              		.section	.text.spi_start,"ax",%progbits
+ 266              		.align	1
+ 267              		.p2align 2,,3
+ 268              		.global	spi_start
+ 269              		.syntax unified
+ 270              		.thumb
+ 271              		.thumb_func
+ 273              	spi_start:
+ 274              	.LVL19:
+ 275              	.LFB139:
+ 118:Src/Soft_SPI.c **** 
+ 119:Src/Soft_SPI.c **** void spi_start(Soft_SPI* spi_struct)
+ 120:Src/Soft_SPI.c **** {
+ 276              		.loc 1 120 1 is_stmt 1 view -0
+ 277              		.cfi_startproc
+ 278              		@ args = 0, pretend = 0, frame = 0
+ 279              		@ frame_needed = 0, uses_anonymous_args = 0
+ 280              		@ link register save eliminated.
+ 121:Src/Soft_SPI.c ****   // Start condition
+ 122:Src/Soft_SPI.c ****   cs_low(spi_struct);
+ 281              		.loc 1 122 3 view .LVU80
+ 282              	.LBB33:
+ 283              	.LBI33:
+  36:Src/Soft_SPI.c **** {
+ 284              		.loc 1 36 20 view .LVU81
+ 285              	.LBB34:
+  38:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 286              		.loc 1 38 3 view .LVU82
+  38:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 287              		.loc 1 38 45 is_stmt 0 view .LVU83
+ 288 0000 8279     		ldrb	r2, [r0, #6]	@ zero_extendqisi2
+  38:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 289              		.loc 1 38 13 view .LVU84
+ 290 0002 0168     		ldr	r1, [r0]
+  38:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 291              		.loc 1 38 31 view .LVU85
+ 292 0004 0123     		movs	r3, #1
+ARM GAS  /tmp/ccZYoZDJ.s 			page 9
+
+
+  38:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 293              		.loc 1 38 50 view .LVU86
+ 294 0006 1032     		adds	r2, r2, #16
+  38:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 295              		.loc 1 38 31 view .LVU87
+ 296 0008 9340     		lsls	r3, r3, r2
+  38:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 297              		.loc 1 38 26 view .LVU88
+ 298 000a 8B61     		str	r3, [r1, #24]
+ 299              	.LVL20:
+  38:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 300              		.loc 1 38 26 view .LVU89
+ 301              	.LBE34:
+ 302              	.LBE33:
+ 123:Src/Soft_SPI.c **** }
+ 303              		.loc 1 123 1 view .LVU90
+ 304 000c 7047     		bx	lr
+ 305              		.cfi_endproc
+ 306              	.LFE139:
+ 308 000e 00BF     		.section	.text.spi_stop,"ax",%progbits
+ 309              		.align	1
+ 310              		.p2align 2,,3
+ 311              		.global	spi_stop
+ 312              		.syntax unified
+ 313              		.thumb
+ 314              		.thumb_func
+ 316              	spi_stop:
+ 317              	.LVL21:
+ 318              	.LFB140:
+ 124:Src/Soft_SPI.c **** 
+ 125:Src/Soft_SPI.c **** void spi_stop(Soft_SPI* spi_struct)
+ 126:Src/Soft_SPI.c **** {
+ 319              		.loc 1 126 1 is_stmt 1 view -0
+ 320              		.cfi_startproc
+ 321              		@ args = 0, pretend = 0, frame = 0
+ 322              		@ frame_needed = 0, uses_anonymous_args = 0
+ 323              		@ link register save eliminated.
+ 127:Src/Soft_SPI.c ****   // Stop condition
+ 128:Src/Soft_SPI.c ****   cs_high(spi_struct);
+ 324              		.loc 1 128 3 view .LVU92
+ 325              	.LBB35:
+ 326              	.LBI35:
+  43:Src/Soft_SPI.c **** {
+ 327              		.loc 1 43 20 view .LVU93
+ 328              	.LBB36:
+  45:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 329              		.loc 1 45 3 view .LVU94
+  45:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 330              		.loc 1 45 44 is_stmt 0 view .LVU95
+ 331 0000 8179     		ldrb	r1, [r0, #6]	@ zero_extendqisi2
+  45:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 332              		.loc 1 45 13 view .LVU96
+ 333 0002 0268     		ldr	r2, [r0]
+  45:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 334              		.loc 1 45 31 view .LVU97
+ 335 0004 0123     		movs	r3, #1
+ 336 0006 8B40     		lsls	r3, r3, r1
+ARM GAS  /tmp/ccZYoZDJ.s 			page 10
+
+
+  45:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 337              		.loc 1 45 26 view .LVU98
+ 338 0008 9361     		str	r3, [r2, #24]
+ 339              	.LVL22:
+  45:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 340              		.loc 1 45 26 view .LVU99
+ 341              	.LBE36:
+ 342              	.LBE35:
+ 129:Src/Soft_SPI.c **** }
+ 343              		.loc 1 129 1 view .LVU100
+ 344 000a 7047     		bx	lr
+ 345              		.cfi_endproc
+ 346              	.LFE140:
+ 348              		.section	.text.spi_write,"ax",%progbits
+ 349              		.align	1
+ 350              		.p2align 2,,3
+ 351              		.global	spi_write
+ 352              		.syntax unified
+ 353              		.thumb
+ 354              		.thumb_func
+ 356              	spi_write:
+ 357              	.LVL23:
+ 358              	.LFB141:
+ 130:Src/Soft_SPI.c **** 
+ 131:Src/Soft_SPI.c **** uint8_t spi_write(Soft_SPI* spi_struct, uint8_t data)
+ 132:Src/Soft_SPI.c **** {
+ 359              		.loc 1 132 1 is_stmt 1 view -0
+ 360              		.cfi_startproc
+ 361              		@ args = 0, pretend = 0, frame = 0
+ 362              		@ frame_needed = 0, uses_anonymous_args = 0
+ 133:Src/Soft_SPI.c ****   uint8_t received_byte = 0;
+ 363              		.loc 1 133 3 view .LVU102
+ 134:Src/Soft_SPI.c **** 
+ 135:Src/Soft_SPI.c ****   // transmit 8 bits, MSB first
+ 136:Src/Soft_SPI.c ****   for(uint8_t i = 8; i; i--) 
+ 364              		.loc 1 136 3 view .LVU103
+ 365              	.LBB37:
+ 366              		.loc 1 136 7 view .LVU104
+ 367              		.loc 1 136 7 is_stmt 0 view .LVU105
+ 368              	.LBE37:
+ 132:Src/Soft_SPI.c ****   uint8_t received_byte = 0;
+ 369              		.loc 1 132 1 view .LVU106
+ 370 0000 70B5     		push	{r4, r5, r6, lr}
+ 371              	.LCFI7:
+ 372              		.cfi_def_cfa_offset 16
+ 373              		.cfi_offset 4, -16
+ 374              		.cfi_offset 5, -12
+ 375              		.cfi_offset 6, -8
+ 376              		.cfi_offset 14, -4
+ 377              	.LBB154:
+ 378              	.LBB38:
+ 379              	.LBB39:
+  32:Src/Soft_SPI.c **** }
+ 380              		.loc 1 32 44 view .LVU107
+ 381 0002 C579     		ldrb	r5, [r0, #7]	@ zero_extendqisi2
+  32:Src/Soft_SPI.c **** }
+ 382              		.loc 1 32 44 view .LVU108
+ARM GAS  /tmp/ccZYoZDJ.s 			page 11
+
+
+ 383              	.LBE39:
+ 384              	.LBE38:
+ 385              		.loc 1 136 22 is_stmt 1 discriminator 1 view .LVU109
+ 386              	.LBB52:
+ 387              	.LBB53:
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 388              		.loc 1 19 44 is_stmt 0 view .LVU110
+ 389 0004 90F804E0 		ldrb	lr, [r0, #4]	@ zero_extendqisi2
+ 390              	.LVL24:
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 391              		.loc 1 19 44 view .LVU111
+ 392              	.LBE53:
+ 393              	.LBE52:
+ 137:Src/Soft_SPI.c ****   {
+ 138:Src/Soft_SPI.c ****     if(data & 0x80)
+ 394              		.loc 1 138 5 is_stmt 1 view .LVU112
+ 395              	.LBB62:
+ 396              	.LBB63:
+  56:Src/Soft_SPI.c **** 
+ 397              		.loc 1 56 50 is_stmt 0 view .LVU113
+ 398 0008 90F805C0 		ldrb	ip, [r0, #5]	@ zero_extendqisi2
+ 399              	.LBE63:
+ 400              	.LBE62:
+ 401              	.LBB76:
+ 402              	.LBB40:
+  32:Src/Soft_SPI.c **** }
+ 403              		.loc 1 32 13 view .LVU114
+ 404 000c 0268     		ldr	r2, [r0]
+  32:Src/Soft_SPI.c **** }
+ 405              		.loc 1 32 31 view .LVU115
+ 406 000e 0123     		movs	r3, #1
+ 407              	.LBE40:
+ 408              	.LBE76:
+ 409              		.loc 1 138 7 view .LVU116
+ 410 0010 0E06     		lsls	r6, r1, #24
+ 139:Src/Soft_SPI.c ****     {
+ 140:Src/Soft_SPI.c ****       mosi_high(spi_struct);
+ 141:Src/Soft_SPI.c ****     }
+ 142:Src/Soft_SPI.c ****     else
+ 143:Src/Soft_SPI.c ****     {
+ 144:Src/Soft_SPI.c ****       mosi_low(spi_struct);
+ 411              		.loc 1 144 7 is_stmt 1 view .LVU117
+ 412              	.LVL25:
+ 413              	.LBB77:
+ 414              	.LBI77:
+  10:Src/Soft_SPI.c **** {
+ 415              		.loc 1 10 20 view .LVU118
+ 416              	.LBB78:
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 417              		.loc 1 12 3 view .LVU119
+ 418              	.LBE78:
+ 419              	.LBE77:
+ 420              	.LBB89:
+ 421              	.LBB41:
+  32:Src/Soft_SPI.c **** }
+ 422              		.loc 1 32 31 is_stmt 0 view .LVU120
+ 423 0012 03FA05F0 		lsl	r0, r3, r5
+ARM GAS  /tmp/ccZYoZDJ.s 			page 12
+
+
+ 424              	.LVL26:
+  32:Src/Soft_SPI.c **** }
+ 425              		.loc 1 32 31 view .LVU121
+ 426              	.LBE41:
+ 427              	.LBE89:
+ 428              	.LBB90:
+ 429              	.LBB91:
+  26:Src/Soft_SPI.c **** }
+ 430              		.loc 1 26 51 view .LVU122
+ 431 0016 05F11004 		add	r4, r5, #16
+ 432              	.LBE91:
+ 433              	.LBE90:
+ 434              	.LBB103:
+ 435              	.LBB79:
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 436              		.loc 1 12 52 view .LVU123
+ 437 001a 58BF     		it	pl
+ 438 001c 0EF11005 		addpl	r5, lr, #16
+ 439              	.LBE79:
+ 440              	.LBE103:
+ 441              	.LBB104:
+ 442              	.LBB64:
+  56:Src/Soft_SPI.c **** 
+ 443              		.loc 1 56 37 view .LVU124
+ 444 0020 03FA0CFC 		lsl	ip, r3, ip
+ 445              	.LBE64:
+ 446              	.LBE104:
+ 447              	.LBB105:
+ 448              	.LBB92:
+  26:Src/Soft_SPI.c **** }
+ 449              		.loc 1 26 31 view .LVU125
+ 450 0024 03FA04F4 		lsl	r4, r3, r4
+ 451              	.LBE92:
+ 452              	.LBE105:
+ 453              	.LBB106:
+ 454              	.LBB80:
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 455              		.loc 1 12 31 view .LVU126
+ 456 0028 54BF     		ite	pl
+ 457 002a AB40     		lslpl	r3, r3, r5
+ 458              	.LBE80:
+ 459              	.LBE106:
+ 140:Src/Soft_SPI.c ****     }
+ 460              		.loc 1 140 7 is_stmt 1 view .LVU127
+ 461              	.LVL27:
+ 462              	.LBB107:
+ 463              	.LBI52:
+  17:Src/Soft_SPI.c **** {
+ 464              		.loc 1 17 20 view .LVU128
+ 465              	.LBB54:
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 466              		.loc 1 19 3 view .LVU129
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 467              		.loc 1 19 31 is_stmt 0 view .LVU130
+ 468 002c 03FA0EF3 		lslmi	r3, r3, lr
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 469              		.loc 1 19 26 view .LVU131
+ARM GAS  /tmp/ccZYoZDJ.s 			page 13
+
+
+ 470 0030 9361     		str	r3, [r2, #24]
+ 471              	.LVL28:
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 472              		.loc 1 19 26 view .LVU132
+ 473              	.LBE54:
+ 474              	.LBE107:
+ 145:Src/Soft_SPI.c ****     }
+ 146:Src/Soft_SPI.c ****     // Shift the data 
+ 147:Src/Soft_SPI.c ****     data<<=1;
+ 475              		.loc 1 147 5 is_stmt 1 view .LVU133
+ 148:Src/Soft_SPI.c **** 
+ 149:Src/Soft_SPI.c ****     sck_high(spi_struct);
+ 476              		.loc 1 149 5 view .LVU134
+ 477              	.LBB108:
+ 478              	.LBI38:
+  30:Src/Soft_SPI.c **** {
+ 479              		.loc 1 30 20 view .LVU135
+ 480              	.LBB42:
+  32:Src/Soft_SPI.c **** }
+ 481              		.loc 1 32 3 view .LVU136
+  32:Src/Soft_SPI.c **** }
+ 482              		.loc 1 32 26 is_stmt 0 view .LVU137
+ 483 0032 9061     		str	r0, [r2, #24]
+ 484              	.LVL29:
+  32:Src/Soft_SPI.c **** }
+ 485              		.loc 1 32 26 view .LVU138
+ 486              	.LBE42:
+ 487              	.LBE108:
+ 150:Src/Soft_SPI.c ****     sck_low(spi_struct);
+ 488              		.loc 1 150 5 is_stmt 1 view .LVU139
+ 489              	.LBB109:
+ 490              	.LBI90:
+  24:Src/Soft_SPI.c **** {
+ 491              		.loc 1 24 20 view .LVU140
+ 492              	.LBB93:
+  26:Src/Soft_SPI.c **** }
+ 493              		.loc 1 26 3 view .LVU141
+  26:Src/Soft_SPI.c **** }
+ 494              		.loc 1 26 26 is_stmt 0 view .LVU142
+ 495 0034 9461     		str	r4, [r2, #24]
+ 496              	.LVL30:
+  26:Src/Soft_SPI.c **** }
+ 497              		.loc 1 26 26 view .LVU143
+ 498              	.LBE93:
+ 499              	.LBE109:
+ 151:Src/Soft_SPI.c **** 
+ 152:Src/Soft_SPI.c ****     // Receive the LSB first
+ 153:Src/Soft_SPI.c ****     received_byte |= miso_state(spi_struct);
+ 500              		.loc 1 153 5 is_stmt 1 view .LVU144
+ 501              	.LBB110:
+ 502              	.LBI62:
+  51:Src/Soft_SPI.c **** {
+ 503              		.loc 1 51 16 view .LVU145
+ 504              	.LBB65:
+  53:Src/Soft_SPI.c **** 
+ 505              		.loc 1 53 3 view .LVU146
+  56:Src/Soft_SPI.c **** 
+ARM GAS  /tmp/ccZYoZDJ.s 			page 14
+
+
+ 506              		.loc 1 56 3 view .LVU147
+  56:Src/Soft_SPI.c **** 
+ 507              		.loc 1 56 26 is_stmt 0 view .LVU148
+ 508 0036 1369     		ldr	r3, [r2, #16]
+  56:Src/Soft_SPI.c **** 
+ 509              		.loc 1 56 32 view .LVU149
+ 510 0038 5FFA8CFC 		uxtb	ip, ip
+ 511              	.LVL31:
+  58:Src/Soft_SPI.c **** }
+ 512              		.loc 1 58 3 is_stmt 1 view .LVU150
+  58:Src/Soft_SPI.c **** }
+ 513              		.loc 1 58 3 is_stmt 0 view .LVU151
+ 514              	.LBE65:
+ 515              	.LBE110:
+ 154:Src/Soft_SPI.c ****     received_byte <<= 1;
+ 516              		.loc 1 154 5 is_stmt 1 view .LVU152
+ 517              	.LBB111:
+ 518              	.LBB66:
+  56:Src/Soft_SPI.c **** 
+ 519              		.loc 1 56 8 is_stmt 0 view .LVU153
+ 520 003c 0CEA0303 		and	r3, ip, r3
+ 521              	.LVL32:
+  56:Src/Soft_SPI.c **** 
+ 522              		.loc 1 56 8 view .LVU154
+ 523              	.LBE66:
+ 524              	.LBE111:
+ 525              		.loc 1 154 19 view .LVU155
+ 526 0040 5B00     		lsls	r3, r3, #1
+ 138:Src/Soft_SPI.c ****     {
+ 527              		.loc 1 138 7 view .LVU156
+ 528 0042 4D06     		lsls	r5, r1, #25
+ 529              		.loc 1 154 19 view .LVU157
+ 530 0044 DBB2     		uxtb	r3, r3
+ 531              	.LVL33:
+ 136:Src/Soft_SPI.c ****   {
+ 532              		.loc 1 136 26 is_stmt 1 discriminator 2 view .LVU158
+ 136:Src/Soft_SPI.c ****   {
+ 533              		.loc 1 136 22 discriminator 1 view .LVU159
+ 138:Src/Soft_SPI.c ****     {
+ 534              		.loc 1 138 5 view .LVU160
+ 138:Src/Soft_SPI.c ****     {
+ 535              		.loc 1 138 7 is_stmt 0 view .LVU161
+ 536 0046 6CD4     		bmi	.L14
+ 144:Src/Soft_SPI.c ****     }
+ 537              		.loc 1 144 7 is_stmt 1 view .LVU162
+ 538              	.LBB112:
+  10:Src/Soft_SPI.c **** {
+ 539              		.loc 1 10 20 view .LVU163
+ 540              	.LBB81:
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 541              		.loc 1 12 3 view .LVU164
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 542              		.loc 1 12 52 is_stmt 0 view .LVU165
+ 543 0048 0EF11006 		add	r6, lr, #16
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 544              		.loc 1 12 31 view .LVU166
+ 545 004c 0125     		movs	r5, #1
+ARM GAS  /tmp/ccZYoZDJ.s 			page 15
+
+
+ 546 004e B540     		lsls	r5, r5, r6
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 547              		.loc 1 12 26 view .LVU167
+ 548 0050 9561     		str	r5, [r2, #24]
+ 549              	.LVL34:
+ 550              	.L15:
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 551              		.loc 1 12 26 view .LVU168
+ 552              	.LBE81:
+ 553              	.LBE112:
+ 147:Src/Soft_SPI.c **** 
+ 554              		.loc 1 147 5 is_stmt 1 view .LVU169
+ 149:Src/Soft_SPI.c ****     sck_low(spi_struct);
+ 555              		.loc 1 149 5 view .LVU170
+ 556              	.LBB113:
+  30:Src/Soft_SPI.c **** {
+ 557              		.loc 1 30 20 view .LVU171
+ 558              	.LBB43:
+  32:Src/Soft_SPI.c **** }
+ 559              		.loc 1 32 3 view .LVU172
+  32:Src/Soft_SPI.c **** }
+ 560              		.loc 1 32 26 is_stmt 0 view .LVU173
+ 561 0052 9061     		str	r0, [r2, #24]
+ 562              	.LVL35:
+  32:Src/Soft_SPI.c **** }
+ 563              		.loc 1 32 26 view .LVU174
+ 564              	.LBE43:
+ 565              	.LBE113:
+ 150:Src/Soft_SPI.c **** 
+ 566              		.loc 1 150 5 is_stmt 1 view .LVU175
+ 567              	.LBB114:
+  24:Src/Soft_SPI.c **** {
+ 568              		.loc 1 24 20 view .LVU176
+ 569              	.LBB94:
+  26:Src/Soft_SPI.c **** }
+ 570              		.loc 1 26 3 view .LVU177
+  26:Src/Soft_SPI.c **** }
+ 571              		.loc 1 26 26 is_stmt 0 view .LVU178
+ 572 0054 9461     		str	r4, [r2, #24]
+ 573              	.LVL36:
+  26:Src/Soft_SPI.c **** }
+ 574              		.loc 1 26 26 view .LVU179
+ 575              	.LBE94:
+ 576              	.LBE114:
+ 153:Src/Soft_SPI.c ****     received_byte <<= 1;
+ 577              		.loc 1 153 5 is_stmt 1 view .LVU180
+ 578              	.LBB115:
+  51:Src/Soft_SPI.c **** {
+ 579              		.loc 1 51 16 view .LVU181
+ 580              	.LBB67:
+  53:Src/Soft_SPI.c **** 
+ 581              		.loc 1 53 3 view .LVU182
+  56:Src/Soft_SPI.c **** 
+ 582              		.loc 1 56 3 view .LVU183
+  56:Src/Soft_SPI.c **** 
+ 583              		.loc 1 56 26 is_stmt 0 view .LVU184
+ 584 0056 1569     		ldr	r5, [r2, #16]
+ARM GAS  /tmp/ccZYoZDJ.s 			page 16
+
+
+ 585              	.LVL37:
+  58:Src/Soft_SPI.c **** }
+ 586              		.loc 1 58 3 is_stmt 1 view .LVU185
+  56:Src/Soft_SPI.c **** 
+ 587              		.loc 1 56 8 is_stmt 0 view .LVU186
+ 588 0058 0CEA0505 		and	r5, ip, r5
+ 589              	.LBE67:
+ 590              	.LBE115:
+ 153:Src/Soft_SPI.c ****     received_byte <<= 1;
+ 591              		.loc 1 153 19 discriminator 1 view .LVU187
+ 592 005c 2B43     		orrs	r3, r3, r5
+ 593              	.LVL38:
+ 594              		.loc 1 154 5 is_stmt 1 view .LVU188
+ 595              		.loc 1 154 19 is_stmt 0 view .LVU189
+ 596 005e 5B00     		lsls	r3, r3, #1
+ 597              	.LVL39:
+ 138:Src/Soft_SPI.c ****     {
+ 598              		.loc 1 138 7 view .LVU190
+ 599 0060 8E06     		lsls	r6, r1, #26
+ 600              		.loc 1 154 19 view .LVU191
+ 601 0062 DBB2     		uxtb	r3, r3
+ 602              	.LVL40:
+ 136:Src/Soft_SPI.c ****   {
+ 603              		.loc 1 136 26 is_stmt 1 discriminator 2 view .LVU192
+ 136:Src/Soft_SPI.c ****   {
+ 604              		.loc 1 136 22 discriminator 1 view .LVU193
+ 138:Src/Soft_SPI.c ****     {
+ 605              		.loc 1 138 5 view .LVU194
+ 138:Src/Soft_SPI.c ****     {
+ 606              		.loc 1 138 7 is_stmt 0 view .LVU195
+ 607 0064 76D4     		bmi	.L16
+ 144:Src/Soft_SPI.c ****     }
+ 608              		.loc 1 144 7 is_stmt 1 view .LVU196
+ 609              	.LVL41:
+ 610              	.LBB116:
+  10:Src/Soft_SPI.c **** {
+ 611              		.loc 1 10 20 view .LVU197
+ 612              	.LBB82:
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 613              		.loc 1 12 3 view .LVU198
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 614              		.loc 1 12 52 is_stmt 0 view .LVU199
+ 615 0066 0EF11006 		add	r6, lr, #16
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 616              		.loc 1 12 31 view .LVU200
+ 617 006a 0125     		movs	r5, #1
+ 618 006c B540     		lsls	r5, r5, r6
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 619              		.loc 1 12 26 view .LVU201
+ 620 006e 9561     		str	r5, [r2, #24]
+ 621              	.LVL42:
+ 622              	.L17:
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 623              		.loc 1 12 26 view .LVU202
+ 624              	.LBE82:
+ 625              	.LBE116:
+ 147:Src/Soft_SPI.c **** 
+ARM GAS  /tmp/ccZYoZDJ.s 			page 17
+
+
+ 626              		.loc 1 147 5 is_stmt 1 view .LVU203
+ 149:Src/Soft_SPI.c ****     sck_low(spi_struct);
+ 627              		.loc 1 149 5 view .LVU204
+ 628              	.LBB117:
+  30:Src/Soft_SPI.c **** {
+ 629              		.loc 1 30 20 view .LVU205
+ 630              	.LBB44:
+  32:Src/Soft_SPI.c **** }
+ 631              		.loc 1 32 3 view .LVU206
+  32:Src/Soft_SPI.c **** }
+ 632              		.loc 1 32 26 is_stmt 0 view .LVU207
+ 633 0070 9061     		str	r0, [r2, #24]
+ 634              	.LVL43:
+  32:Src/Soft_SPI.c **** }
+ 635              		.loc 1 32 26 view .LVU208
+ 636              	.LBE44:
+ 637              	.LBE117:
+ 150:Src/Soft_SPI.c **** 
+ 638              		.loc 1 150 5 is_stmt 1 view .LVU209
+ 639              	.LBB118:
+  24:Src/Soft_SPI.c **** {
+ 640              		.loc 1 24 20 view .LVU210
+ 641              	.LBB95:
+  26:Src/Soft_SPI.c **** }
+ 642              		.loc 1 26 3 view .LVU211
+  26:Src/Soft_SPI.c **** }
+ 643              		.loc 1 26 26 is_stmt 0 view .LVU212
+ 644 0072 9461     		str	r4, [r2, #24]
+ 645              	.LVL44:
+  26:Src/Soft_SPI.c **** }
+ 646              		.loc 1 26 26 view .LVU213
+ 647              	.LBE95:
+ 648              	.LBE118:
+ 153:Src/Soft_SPI.c ****     received_byte <<= 1;
+ 649              		.loc 1 153 5 is_stmt 1 view .LVU214
+ 650              	.LBB119:
+  51:Src/Soft_SPI.c **** {
+ 651              		.loc 1 51 16 view .LVU215
+ 652              	.LBB68:
+  53:Src/Soft_SPI.c **** 
+ 653              		.loc 1 53 3 view .LVU216
+  56:Src/Soft_SPI.c **** 
+ 654              		.loc 1 56 3 view .LVU217
+  56:Src/Soft_SPI.c **** 
+ 655              		.loc 1 56 26 is_stmt 0 view .LVU218
+ 656 0074 1569     		ldr	r5, [r2, #16]
+ 657              	.LVL45:
+  58:Src/Soft_SPI.c **** }
+ 658              		.loc 1 58 3 is_stmt 1 view .LVU219
+  56:Src/Soft_SPI.c **** 
+ 659              		.loc 1 56 8 is_stmt 0 view .LVU220
+ 660 0076 0CEA0505 		and	r5, ip, r5
+ 661              	.LBE68:
+ 662              	.LBE119:
+ 153:Src/Soft_SPI.c ****     received_byte <<= 1;
+ 663              		.loc 1 153 19 discriminator 1 view .LVU221
+ 664 007a 2B43     		orrs	r3, r3, r5
+ARM GAS  /tmp/ccZYoZDJ.s 			page 18
+
+
+ 665              	.LVL46:
+ 666              		.loc 1 154 5 is_stmt 1 view .LVU222
+ 667              		.loc 1 154 19 is_stmt 0 view .LVU223
+ 668 007c 5B00     		lsls	r3, r3, #1
+ 669              	.LVL47:
+ 138:Src/Soft_SPI.c ****     {
+ 670              		.loc 1 138 7 view .LVU224
+ 671 007e CD06     		lsls	r5, r1, #27
+ 672              		.loc 1 154 19 view .LVU225
+ 673 0080 DBB2     		uxtb	r3, r3
+ 674              	.LVL48:
+ 136:Src/Soft_SPI.c ****   {
+ 675              		.loc 1 136 26 is_stmt 1 discriminator 2 view .LVU226
+ 136:Src/Soft_SPI.c ****   {
+ 676              		.loc 1 136 22 discriminator 1 view .LVU227
+ 138:Src/Soft_SPI.c ****     {
+ 677              		.loc 1 138 5 view .LVU228
+ 138:Src/Soft_SPI.c ****     {
+ 678              		.loc 1 138 7 is_stmt 0 view .LVU229
+ 679 0082 62D4     		bmi	.L18
+ 144:Src/Soft_SPI.c ****     }
+ 680              		.loc 1 144 7 is_stmt 1 view .LVU230
+ 681              	.LVL49:
+ 682              	.LBB120:
+  10:Src/Soft_SPI.c **** {
+ 683              		.loc 1 10 20 view .LVU231
+ 684              	.LBB83:
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 685              		.loc 1 12 3 view .LVU232
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 686              		.loc 1 12 52 is_stmt 0 view .LVU233
+ 687 0084 0EF11006 		add	r6, lr, #16
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 688              		.loc 1 12 31 view .LVU234
+ 689 0088 0125     		movs	r5, #1
+ 690 008a B540     		lsls	r5, r5, r6
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 691              		.loc 1 12 26 view .LVU235
+ 692 008c 9561     		str	r5, [r2, #24]
+ 693              	.LVL50:
+ 694              	.L19:
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 695              		.loc 1 12 26 view .LVU236
+ 696              	.LBE83:
+ 697              	.LBE120:
+ 147:Src/Soft_SPI.c **** 
+ 698              		.loc 1 147 5 is_stmt 1 view .LVU237
+ 149:Src/Soft_SPI.c ****     sck_low(spi_struct);
+ 699              		.loc 1 149 5 view .LVU238
+ 700              	.LBB121:
+  30:Src/Soft_SPI.c **** {
+ 701              		.loc 1 30 20 view .LVU239
+ 702              	.LBB45:
+  32:Src/Soft_SPI.c **** }
+ 703              		.loc 1 32 3 view .LVU240
+  32:Src/Soft_SPI.c **** }
+ 704              		.loc 1 32 26 is_stmt 0 view .LVU241
+ARM GAS  /tmp/ccZYoZDJ.s 			page 19
+
+
+ 705 008e 9061     		str	r0, [r2, #24]
+ 706              	.LVL51:
+  32:Src/Soft_SPI.c **** }
+ 707              		.loc 1 32 26 view .LVU242
+ 708              	.LBE45:
+ 709              	.LBE121:
+ 150:Src/Soft_SPI.c **** 
+ 710              		.loc 1 150 5 is_stmt 1 view .LVU243
+ 711              	.LBB122:
+  24:Src/Soft_SPI.c **** {
+ 712              		.loc 1 24 20 view .LVU244
+ 713              	.LBB96:
+  26:Src/Soft_SPI.c **** }
+ 714              		.loc 1 26 3 view .LVU245
+  26:Src/Soft_SPI.c **** }
+ 715              		.loc 1 26 26 is_stmt 0 view .LVU246
+ 716 0090 9461     		str	r4, [r2, #24]
+ 717              	.LVL52:
+  26:Src/Soft_SPI.c **** }
+ 718              		.loc 1 26 26 view .LVU247
+ 719              	.LBE96:
+ 720              	.LBE122:
+ 153:Src/Soft_SPI.c ****     received_byte <<= 1;
+ 721              		.loc 1 153 5 is_stmt 1 view .LVU248
+ 722              	.LBB123:
+  51:Src/Soft_SPI.c **** {
+ 723              		.loc 1 51 16 view .LVU249
+ 724              	.LBB69:
+  53:Src/Soft_SPI.c **** 
+ 725              		.loc 1 53 3 view .LVU250
+  56:Src/Soft_SPI.c **** 
+ 726              		.loc 1 56 3 view .LVU251
+  56:Src/Soft_SPI.c **** 
+ 727              		.loc 1 56 26 is_stmt 0 view .LVU252
+ 728 0092 1569     		ldr	r5, [r2, #16]
+ 729              	.LVL53:
+  58:Src/Soft_SPI.c **** }
+ 730              		.loc 1 58 3 is_stmt 1 view .LVU253
+  56:Src/Soft_SPI.c **** 
+ 731              		.loc 1 56 8 is_stmt 0 view .LVU254
+ 732 0094 0CEA0505 		and	r5, ip, r5
+ 733              	.LBE69:
+ 734              	.LBE123:
+ 153:Src/Soft_SPI.c ****     received_byte <<= 1;
+ 735              		.loc 1 153 19 discriminator 1 view .LVU255
+ 736 0098 2B43     		orrs	r3, r3, r5
+ 737              	.LVL54:
+ 738              		.loc 1 154 5 is_stmt 1 view .LVU256
+ 739              		.loc 1 154 19 is_stmt 0 view .LVU257
+ 740 009a 5B00     		lsls	r3, r3, #1
+ 741              	.LVL55:
+ 138:Src/Soft_SPI.c ****     {
+ 742              		.loc 1 138 7 view .LVU258
+ 743 009c 0E07     		lsls	r6, r1, #28
+ 744              		.loc 1 154 19 view .LVU259
+ 745 009e DBB2     		uxtb	r3, r3
+ 746              	.LVL56:
+ARM GAS  /tmp/ccZYoZDJ.s 			page 20
+
+
+ 136:Src/Soft_SPI.c ****   {
+ 747              		.loc 1 136 26 is_stmt 1 discriminator 2 view .LVU260
+ 136:Src/Soft_SPI.c ****   {
+ 748              		.loc 1 136 22 discriminator 1 view .LVU261
+ 138:Src/Soft_SPI.c ****     {
+ 749              		.loc 1 138 5 view .LVU262
+ 138:Src/Soft_SPI.c ****     {
+ 750              		.loc 1 138 7 is_stmt 0 view .LVU263
+ 751 00a0 4ED4     		bmi	.L20
+ 144:Src/Soft_SPI.c ****     }
+ 752              		.loc 1 144 7 is_stmt 1 view .LVU264
+ 753              	.LVL57:
+ 754              	.LBB124:
+  10:Src/Soft_SPI.c **** {
+ 755              		.loc 1 10 20 view .LVU265
+ 756              	.LBB84:
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 757              		.loc 1 12 3 view .LVU266
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 758              		.loc 1 12 52 is_stmt 0 view .LVU267
+ 759 00a2 0EF11006 		add	r6, lr, #16
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 760              		.loc 1 12 31 view .LVU268
+ 761 00a6 0125     		movs	r5, #1
+ 762 00a8 B540     		lsls	r5, r5, r6
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 763              		.loc 1 12 26 view .LVU269
+ 764 00aa 9561     		str	r5, [r2, #24]
+ 765              	.LVL58:
+ 766              	.L21:
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 767              		.loc 1 12 26 view .LVU270
+ 768              	.LBE84:
+ 769              	.LBE124:
+ 147:Src/Soft_SPI.c **** 
+ 770              		.loc 1 147 5 is_stmt 1 view .LVU271
+ 149:Src/Soft_SPI.c ****     sck_low(spi_struct);
+ 771              		.loc 1 149 5 view .LVU272
+ 772              	.LBB125:
+  30:Src/Soft_SPI.c **** {
+ 773              		.loc 1 30 20 view .LVU273
+ 774              	.LBB46:
+  32:Src/Soft_SPI.c **** }
+ 775              		.loc 1 32 3 view .LVU274
+  32:Src/Soft_SPI.c **** }
+ 776              		.loc 1 32 26 is_stmt 0 view .LVU275
+ 777 00ac 9061     		str	r0, [r2, #24]
+ 778              	.LVL59:
+  32:Src/Soft_SPI.c **** }
+ 779              		.loc 1 32 26 view .LVU276
+ 780              	.LBE46:
+ 781              	.LBE125:
+ 150:Src/Soft_SPI.c **** 
+ 782              		.loc 1 150 5 is_stmt 1 view .LVU277
+ 783              	.LBB126:
+  24:Src/Soft_SPI.c **** {
+ 784              		.loc 1 24 20 view .LVU278
+ARM GAS  /tmp/ccZYoZDJ.s 			page 21
+
+
+ 785              	.LBB97:
+  26:Src/Soft_SPI.c **** }
+ 786              		.loc 1 26 3 view .LVU279
+  26:Src/Soft_SPI.c **** }
+ 787              		.loc 1 26 26 is_stmt 0 view .LVU280
+ 788 00ae 9461     		str	r4, [r2, #24]
+ 789              	.LVL60:
+  26:Src/Soft_SPI.c **** }
+ 790              		.loc 1 26 26 view .LVU281
+ 791              	.LBE97:
+ 792              	.LBE126:
+ 153:Src/Soft_SPI.c ****     received_byte <<= 1;
+ 793              		.loc 1 153 5 is_stmt 1 view .LVU282
+ 794              	.LBB127:
+  51:Src/Soft_SPI.c **** {
+ 795              		.loc 1 51 16 view .LVU283
+ 796              	.LBB70:
+  53:Src/Soft_SPI.c **** 
+ 797              		.loc 1 53 3 view .LVU284
+  56:Src/Soft_SPI.c **** 
+ 798              		.loc 1 56 3 view .LVU285
+  56:Src/Soft_SPI.c **** 
+ 799              		.loc 1 56 26 is_stmt 0 view .LVU286
+ 800 00b0 1569     		ldr	r5, [r2, #16]
+ 801              	.LVL61:
+  58:Src/Soft_SPI.c **** }
+ 802              		.loc 1 58 3 is_stmt 1 view .LVU287
+  56:Src/Soft_SPI.c **** 
+ 803              		.loc 1 56 8 is_stmt 0 view .LVU288
+ 804 00b2 0CEA0505 		and	r5, ip, r5
+ 805              	.LBE70:
+ 806              	.LBE127:
+ 153:Src/Soft_SPI.c ****     received_byte <<= 1;
+ 807              		.loc 1 153 19 discriminator 1 view .LVU289
+ 808 00b6 2B43     		orrs	r3, r3, r5
+ 809              	.LVL62:
+ 810              		.loc 1 154 5 is_stmt 1 view .LVU290
+ 811              		.loc 1 154 19 is_stmt 0 view .LVU291
+ 812 00b8 5B00     		lsls	r3, r3, #1
+ 813              	.LVL63:
+ 138:Src/Soft_SPI.c ****     {
+ 814              		.loc 1 138 7 view .LVU292
+ 815 00ba 4D07     		lsls	r5, r1, #29
+ 816              		.loc 1 154 19 view .LVU293
+ 817 00bc DBB2     		uxtb	r3, r3
+ 818              	.LVL64:
+ 136:Src/Soft_SPI.c ****   {
+ 819              		.loc 1 136 26 is_stmt 1 discriminator 2 view .LVU294
+ 136:Src/Soft_SPI.c ****   {
+ 820              		.loc 1 136 22 discriminator 1 view .LVU295
+ 138:Src/Soft_SPI.c ****     {
+ 821              		.loc 1 138 5 view .LVU296
+ 138:Src/Soft_SPI.c ****     {
+ 822              		.loc 1 138 7 is_stmt 0 view .LVU297
+ 823 00be 3AD4     		bmi	.L22
+ 144:Src/Soft_SPI.c ****     }
+ 824              		.loc 1 144 7 is_stmt 1 view .LVU298
+ARM GAS  /tmp/ccZYoZDJ.s 			page 22
+
+
+ 825              	.LVL65:
+ 826              	.LBB128:
+  10:Src/Soft_SPI.c **** {
+ 827              		.loc 1 10 20 view .LVU299
+ 828              	.LBB85:
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 829              		.loc 1 12 3 view .LVU300
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 830              		.loc 1 12 52 is_stmt 0 view .LVU301
+ 831 00c0 0EF11006 		add	r6, lr, #16
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 832              		.loc 1 12 31 view .LVU302
+ 833 00c4 0125     		movs	r5, #1
+ 834 00c6 B540     		lsls	r5, r5, r6
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 835              		.loc 1 12 26 view .LVU303
+ 836 00c8 9561     		str	r5, [r2, #24]
+ 837              	.LVL66:
+ 838              	.L23:
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 839              		.loc 1 12 26 view .LVU304
+ 840              	.LBE85:
+ 841              	.LBE128:
+ 147:Src/Soft_SPI.c **** 
+ 842              		.loc 1 147 5 is_stmt 1 view .LVU305
+ 843              	.LBB129:
+ 844              	.LBB47:
+  32:Src/Soft_SPI.c **** }
+ 845              		.loc 1 32 26 is_stmt 0 view .LVU306
+ 846 00ca 9061     		str	r0, [r2, #24]
+ 847              	.LBE47:
+ 848              	.LBE129:
+ 849              	.LBB130:
+ 850              	.LBB98:
+  26:Src/Soft_SPI.c **** }
+ 851              		.loc 1 26 26 view .LVU307
+ 852 00cc 9461     		str	r4, [r2, #24]
+ 853              	.LBE98:
+ 854              	.LBE130:
+ 855              	.LBB131:
+ 856              	.LBB71:
+  56:Src/Soft_SPI.c **** 
+ 857              		.loc 1 56 26 view .LVU308
+ 858 00ce 1569     		ldr	r5, [r2, #16]
+  56:Src/Soft_SPI.c **** 
+ 859              		.loc 1 56 8 view .LVU309
+ 860 00d0 0CEA0505 		and	r5, ip, r5
+ 861              	.LBE71:
+ 862              	.LBE131:
+ 147:Src/Soft_SPI.c **** 
+ 863              		.loc 1 147 9 view .LVU310
+ 864 00d4 8901     		lsls	r1, r1, #6
+ 865              	.LVL67:
+ 153:Src/Soft_SPI.c ****     received_byte <<= 1;
+ 866              		.loc 1 153 19 discriminator 1 view .LVU311
+ 867 00d6 2B43     		orrs	r3, r3, r5
+ 868              	.LVL68:
+ARM GAS  /tmp/ccZYoZDJ.s 			page 23
+
+
+ 869              		.loc 1 154 19 view .LVU312
+ 870 00d8 5B00     		lsls	r3, r3, #1
+ 138:Src/Soft_SPI.c ****     {
+ 871              		.loc 1 138 7 view .LVU313
+ 872 00da 0E06     		lsls	r6, r1, #24
+ 873              		.loc 1 154 19 view .LVU314
+ 874 00dc DBB2     		uxtb	r3, r3
+ 147:Src/Soft_SPI.c **** 
+ 875              		.loc 1 147 9 view .LVU315
+ 876 00de CDB2     		uxtb	r5, r1
+ 877              	.LVL69:
+ 149:Src/Soft_SPI.c ****     sck_low(spi_struct);
+ 878              		.loc 1 149 5 is_stmt 1 view .LVU316
+ 879              	.LBB132:
+  30:Src/Soft_SPI.c **** {
+ 880              		.loc 1 30 20 view .LVU317
+ 881              	.LBB48:
+  32:Src/Soft_SPI.c **** }
+ 882              		.loc 1 32 3 view .LVU318
+  32:Src/Soft_SPI.c **** }
+ 883              		.loc 1 32 3 is_stmt 0 view .LVU319
+ 884              	.LBE48:
+ 885              	.LBE132:
+ 150:Src/Soft_SPI.c **** 
+ 886              		.loc 1 150 5 is_stmt 1 view .LVU320
+ 887              	.LBB133:
+  24:Src/Soft_SPI.c **** {
+ 888              		.loc 1 24 20 view .LVU321
+ 889              	.LBB99:
+  26:Src/Soft_SPI.c **** }
+ 890              		.loc 1 26 3 view .LVU322
+  26:Src/Soft_SPI.c **** }
+ 891              		.loc 1 26 3 is_stmt 0 view .LVU323
+ 892              	.LBE99:
+ 893              	.LBE133:
+ 153:Src/Soft_SPI.c ****     received_byte <<= 1;
+ 894              		.loc 1 153 5 is_stmt 1 view .LVU324
+ 895              	.LBB134:
+  51:Src/Soft_SPI.c **** {
+ 896              		.loc 1 51 16 view .LVU325
+ 897              	.LBB72:
+  53:Src/Soft_SPI.c **** 
+ 898              		.loc 1 53 3 view .LVU326
+  56:Src/Soft_SPI.c **** 
+ 899              		.loc 1 56 3 view .LVU327
+  58:Src/Soft_SPI.c **** }
+ 900              		.loc 1 58 3 view .LVU328
+  58:Src/Soft_SPI.c **** }
+ 901              		.loc 1 58 3 is_stmt 0 view .LVU329
+ 902              	.LBE72:
+ 903              	.LBE134:
+ 904              		.loc 1 154 5 is_stmt 1 view .LVU330
+ 136:Src/Soft_SPI.c ****   {
+ 905              		.loc 1 136 26 discriminator 2 view .LVU331
+ 136:Src/Soft_SPI.c ****   {
+ 906              		.loc 1 136 22 discriminator 1 view .LVU332
+ 138:Src/Soft_SPI.c ****     {
+ARM GAS  /tmp/ccZYoZDJ.s 			page 24
+
+
+ 907              		.loc 1 138 5 view .LVU333
+ 138:Src/Soft_SPI.c ****     {
+ 908              		.loc 1 138 7 is_stmt 0 view .LVU334
+ 909 00e0 24D4     		bmi	.L24
+ 144:Src/Soft_SPI.c ****     }
+ 910              		.loc 1 144 7 is_stmt 1 view .LVU335
+ 911              	.LVL70:
+ 912              	.LBB135:
+  10:Src/Soft_SPI.c **** {
+ 913              		.loc 1 10 20 view .LVU336
+ 914              	.LBB86:
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 915              		.loc 1 12 3 view .LVU337
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 916              		.loc 1 12 52 is_stmt 0 view .LVU338
+ 917 00e2 0EF11006 		add	r6, lr, #16
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 918              		.loc 1 12 31 view .LVU339
+ 919 00e6 0121     		movs	r1, #1
+ 920 00e8 B140     		lsls	r1, r1, r6
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 921              		.loc 1 12 26 view .LVU340
+ 922 00ea 9161     		str	r1, [r2, #24]
+ 923              	.LVL71:
+ 924              	.L25:
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 925              		.loc 1 12 26 view .LVU341
+ 926              	.LBE86:
+ 927              	.LBE135:
+ 147:Src/Soft_SPI.c **** 
+ 928              		.loc 1 147 5 is_stmt 1 view .LVU342
+ 149:Src/Soft_SPI.c ****     sck_low(spi_struct);
+ 929              		.loc 1 149 5 view .LVU343
+ 930              	.LBB136:
+  30:Src/Soft_SPI.c **** {
+ 931              		.loc 1 30 20 view .LVU344
+ 932              	.LBB49:
+  32:Src/Soft_SPI.c **** }
+ 933              		.loc 1 32 3 view .LVU345
+  32:Src/Soft_SPI.c **** }
+ 934              		.loc 1 32 26 is_stmt 0 view .LVU346
+ 935 00ec 9061     		str	r0, [r2, #24]
+ 936              	.LVL72:
+  32:Src/Soft_SPI.c **** }
+ 937              		.loc 1 32 26 view .LVU347
+ 938              	.LBE49:
+ 939              	.LBE136:
+ 150:Src/Soft_SPI.c **** 
+ 940              		.loc 1 150 5 is_stmt 1 view .LVU348
+ 941              	.LBB137:
+  24:Src/Soft_SPI.c **** {
+ 942              		.loc 1 24 20 view .LVU349
+ 943              	.LBB100:
+  26:Src/Soft_SPI.c **** }
+ 944              		.loc 1 26 3 view .LVU350
+  26:Src/Soft_SPI.c **** }
+ 945              		.loc 1 26 26 is_stmt 0 view .LVU351
+ARM GAS  /tmp/ccZYoZDJ.s 			page 25
+
+
+ 946 00ee 9461     		str	r4, [r2, #24]
+ 947              	.LVL73:
+  26:Src/Soft_SPI.c **** }
+ 948              		.loc 1 26 26 view .LVU352
+ 949              	.LBE100:
+ 950              	.LBE137:
+ 153:Src/Soft_SPI.c ****     received_byte <<= 1;
+ 951              		.loc 1 153 5 is_stmt 1 view .LVU353
+ 952              	.LBB138:
+  51:Src/Soft_SPI.c **** {
+ 953              		.loc 1 51 16 view .LVU354
+ 954              	.LBB73:
+  53:Src/Soft_SPI.c **** 
+ 955              		.loc 1 53 3 view .LVU355
+  56:Src/Soft_SPI.c **** 
+ 956              		.loc 1 56 3 view .LVU356
+  56:Src/Soft_SPI.c **** 
+ 957              		.loc 1 56 26 is_stmt 0 view .LVU357
+ 958 00f0 1169     		ldr	r1, [r2, #16]
+ 959              	.LVL74:
+  58:Src/Soft_SPI.c **** }
+ 960              		.loc 1 58 3 is_stmt 1 view .LVU358
+  56:Src/Soft_SPI.c **** 
+ 961              		.loc 1 56 8 is_stmt 0 view .LVU359
+ 962 00f2 0CEA0101 		and	r1, ip, r1
+ 963              	.LBE73:
+ 964              	.LBE138:
+ 153:Src/Soft_SPI.c ****     received_byte <<= 1;
+ 965              		.loc 1 153 19 discriminator 1 view .LVU360
+ 966 00f6 0B43     		orrs	r3, r3, r1
+ 967              	.LVL75:
+ 968              		.loc 1 154 5 is_stmt 1 view .LVU361
+ 138:Src/Soft_SPI.c ****     {
+ 969              		.loc 1 138 7 is_stmt 0 view .LVU362
+ 970 00f8 6906     		lsls	r1, r5, #25
+ 971              	.LBB139:
+ 972              	.LBB87:
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 973              		.loc 1 12 52 view .LVU363
+ 974 00fa 58BF     		it	pl
+ 975 00fc 0EF1100E 		addpl	lr, lr, #16
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 976              		.loc 1 12 31 view .LVU364
+ 977 0100 0121     		movs	r1, #1
+ 978 0102 01FA0EF1 		lsl	r1, r1, lr
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 979              		.loc 1 12 26 view .LVU365
+ 980 0106 9161     		str	r1, [r2, #24]
+ 981              	.LBE87:
+ 982              	.LBE139:
+ 983              	.LBB140:
+ 984              	.LBB50:
+  32:Src/Soft_SPI.c **** }
+ 985              		.loc 1 32 26 view .LVU366
+ 986 0108 9061     		str	r0, [r2, #24]
+ 987              	.LBE50:
+ 988              	.LBE140:
+ARM GAS  /tmp/ccZYoZDJ.s 			page 26
+
+
+ 989              	.LBB141:
+ 990              	.LBB101:
+  26:Src/Soft_SPI.c **** }
+ 991              		.loc 1 26 26 view .LVU367
+ 992 010a 9461     		str	r4, [r2, #24]
+ 993              	.LBE101:
+ 994              	.LBE141:
+ 995              	.LBB142:
+ 996              	.LBB74:
+  56:Src/Soft_SPI.c **** 
+ 997              		.loc 1 56 26 view .LVU368
+ 998 010c 1269     		ldr	r2, [r2, #16]
+ 999              	.LBE74:
+ 1000              	.LBE142:
+ 1001              		.loc 1 154 19 view .LVU369
+ 1002 010e 5B00     		lsls	r3, r3, #1
+ 1003              	.LVL76:
+ 1004              		.loc 1 154 19 view .LVU370
+ 1005 0110 DBB2     		uxtb	r3, r3
+ 1006              	.LVL77:
+ 136:Src/Soft_SPI.c ****   {
+ 1007              		.loc 1 136 26 is_stmt 1 discriminator 2 view .LVU371
+ 136:Src/Soft_SPI.c ****   {
+ 1008              		.loc 1 136 22 discriminator 1 view .LVU372
+ 138:Src/Soft_SPI.c ****     {
+ 1009              		.loc 1 138 5 view .LVU373
+ 140:Src/Soft_SPI.c ****     }
+ 1010              		.loc 1 140 7 view .LVU374
+ 1011              	.LBB143:
+  17:Src/Soft_SPI.c **** {
+ 1012              		.loc 1 17 20 view .LVU375
+ 1013              	.LBB55:
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 1014              		.loc 1 19 3 view .LVU376
+ 1015              	.LBE55:
+ 1016              	.LBE143:
+ 144:Src/Soft_SPI.c ****     }
+ 1017              		.loc 1 144 7 view .LVU377
+ 1018              	.LBB144:
+  10:Src/Soft_SPI.c **** {
+ 1019              		.loc 1 10 20 view .LVU378
+ 1020              	.LBB88:
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 1021              		.loc 1 12 3 view .LVU379
+  12:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 1022              		.loc 1 12 3 is_stmt 0 view .LVU380
+ 1023              	.LBE88:
+ 1024              	.LBE144:
+ 147:Src/Soft_SPI.c **** 
+ 1025              		.loc 1 147 5 is_stmt 1 view .LVU381
+ 149:Src/Soft_SPI.c ****     sck_low(spi_struct);
+ 1026              		.loc 1 149 5 view .LVU382
+ 1027              	.LBB145:
+  30:Src/Soft_SPI.c **** {
+ 1028              		.loc 1 30 20 view .LVU383
+ 1029              	.LBB51:
+  32:Src/Soft_SPI.c **** }
+ARM GAS  /tmp/ccZYoZDJ.s 			page 27
+
+
+ 1030              		.loc 1 32 3 view .LVU384
+  32:Src/Soft_SPI.c **** }
+ 1031              		.loc 1 32 3 is_stmt 0 view .LVU385
+ 1032              	.LBE51:
+ 1033              	.LBE145:
+ 150:Src/Soft_SPI.c **** 
+ 1034              		.loc 1 150 5 is_stmt 1 view .LVU386
+ 1035              	.LBB146:
+  24:Src/Soft_SPI.c **** {
+ 1036              		.loc 1 24 20 view .LVU387
+ 1037              	.LBB102:
+  26:Src/Soft_SPI.c **** }
+ 1038              		.loc 1 26 3 view .LVU388
+  26:Src/Soft_SPI.c **** }
+ 1039              		.loc 1 26 3 is_stmt 0 view .LVU389
+ 1040              	.LBE102:
+ 1041              	.LBE146:
+ 153:Src/Soft_SPI.c ****     received_byte <<= 1;
+ 1042              		.loc 1 153 5 is_stmt 1 view .LVU390
+ 1043              	.LBB147:
+  51:Src/Soft_SPI.c **** {
+ 1044              		.loc 1 51 16 view .LVU391
+ 1045              	.LBB75:
+  53:Src/Soft_SPI.c **** 
+ 1046              		.loc 1 53 3 view .LVU392
+  56:Src/Soft_SPI.c **** 
+ 1047              		.loc 1 56 3 view .LVU393
+  58:Src/Soft_SPI.c **** }
+ 1048              		.loc 1 58 3 view .LVU394
+  56:Src/Soft_SPI.c **** 
+ 1049              		.loc 1 56 8 is_stmt 0 view .LVU395
+ 1050 0112 0CEA020C 		and	ip, ip, r2
+ 1051              	.LBE75:
+ 1052              	.LBE147:
+ 153:Src/Soft_SPI.c ****     received_byte <<= 1;
+ 1053              		.loc 1 153 19 discriminator 1 view .LVU396
+ 1054 0116 43EA0C00 		orr	r0, r3, ip
+ 1055              	.LVL78:
+ 1056              		.loc 1 154 5 is_stmt 1 view .LVU397
+ 136:Src/Soft_SPI.c ****   {
+ 1057              		.loc 1 136 26 discriminator 2 view .LVU398
+ 136:Src/Soft_SPI.c ****   {
+ 1058              		.loc 1 136 22 discriminator 1 view .LVU399
+ 1059              	.LBE154:
+ 155:Src/Soft_SPI.c ****   }
+ 156:Src/Soft_SPI.c **** 
+ 157:Src/Soft_SPI.c ****   return received_byte;
+ 1060              		.loc 1 157 3 view .LVU400
+ 1061              	.LBB155:
+ 154:Src/Soft_SPI.c ****   }
+ 1062              		.loc 1 154 19 is_stmt 0 view .LVU401
+ 1063 011a 4000     		lsls	r0, r0, #1
+ 1064              	.LVL79:
+ 154:Src/Soft_SPI.c ****   }
+ 1065              		.loc 1 154 19 view .LVU402
+ 1066              	.LBE155:
+ 158:Src/Soft_SPI.c **** }
+ARM GAS  /tmp/ccZYoZDJ.s 			page 28
+
+
+ 1067              		.loc 1 158 1 view .LVU403
+ 1068 011c 00F0FE00 		and	r0, r0, #254
+ 1069 0120 70BD     		pop	{r4, r5, r6, pc}
+ 1070              	.LVL80:
+ 1071              	.L14:
+ 1072              	.LBB156:
+ 140:Src/Soft_SPI.c ****     }
+ 1073              		.loc 1 140 7 is_stmt 1 view .LVU404
+ 1074              	.LBB148:
+  17:Src/Soft_SPI.c **** {
+ 1075              		.loc 1 17 20 view .LVU405
+ 1076              	.LBB56:
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 1077              		.loc 1 19 3 view .LVU406
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 1078              		.loc 1 19 31 is_stmt 0 view .LVU407
+ 1079 0122 0125     		movs	r5, #1
+ 1080 0124 05FA0EF5 		lsl	r5, r5, lr
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 1081              		.loc 1 19 26 view .LVU408
+ 1082 0128 9561     		str	r5, [r2, #24]
+ 1083              	.LVL81:
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 1084              		.loc 1 19 26 view .LVU409
+ 1085 012a 92E7     		b	.L15
+ 1086              	.LVL82:
+ 1087              	.L24:
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 1088              		.loc 1 19 26 view .LVU410
+ 1089              	.LBE56:
+ 1090              	.LBE148:
+ 140:Src/Soft_SPI.c ****     }
+ 1091              		.loc 1 140 7 is_stmt 1 view .LVU411
+ 1092              	.LBB149:
+  17:Src/Soft_SPI.c **** {
+ 1093              		.loc 1 17 20 view .LVU412
+ 1094              	.LBB57:
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 1095              		.loc 1 19 3 view .LVU413
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 1096              		.loc 1 19 31 is_stmt 0 view .LVU414
+ 1097 012c 0121     		movs	r1, #1
+ 1098 012e 01FA0EF1 		lsl	r1, r1, lr
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 1099              		.loc 1 19 26 view .LVU415
+ 1100 0132 9161     		str	r1, [r2, #24]
+ 1101              	.LVL83:
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 1102              		.loc 1 19 26 view .LVU416
+ 1103 0134 DAE7     		b	.L25
+ 1104              	.LVL84:
+ 1105              	.L22:
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 1106              		.loc 1 19 26 view .LVU417
+ 1107              	.LBE57:
+ 1108              	.LBE149:
+ 140:Src/Soft_SPI.c ****     }
+ARM GAS  /tmp/ccZYoZDJ.s 			page 29
+
+
+ 1109              		.loc 1 140 7 is_stmt 1 view .LVU418
+ 1110              	.LBB150:
+  17:Src/Soft_SPI.c **** {
+ 1111              		.loc 1 17 20 view .LVU419
+ 1112              	.LBB58:
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 1113              		.loc 1 19 3 view .LVU420
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 1114              		.loc 1 19 31 is_stmt 0 view .LVU421
+ 1115 0136 0125     		movs	r5, #1
+ 1116 0138 05FA0EF5 		lsl	r5, r5, lr
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 1117              		.loc 1 19 26 view .LVU422
+ 1118 013c 9561     		str	r5, [r2, #24]
+ 1119              	.LVL85:
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 1120              		.loc 1 19 26 view .LVU423
+ 1121 013e C4E7     		b	.L23
+ 1122              	.LVL86:
+ 1123              	.L20:
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 1124              		.loc 1 19 26 view .LVU424
+ 1125              	.LBE58:
+ 1126              	.LBE150:
+ 140:Src/Soft_SPI.c ****     }
+ 1127              		.loc 1 140 7 is_stmt 1 view .LVU425
+ 1128              	.LBB151:
+  17:Src/Soft_SPI.c **** {
+ 1129              		.loc 1 17 20 view .LVU426
+ 1130              	.LBB59:
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 1131              		.loc 1 19 3 view .LVU427
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 1132              		.loc 1 19 31 is_stmt 0 view .LVU428
+ 1133 0140 0125     		movs	r5, #1
+ 1134 0142 05FA0EF5 		lsl	r5, r5, lr
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 1135              		.loc 1 19 26 view .LVU429
+ 1136 0146 9561     		str	r5, [r2, #24]
+ 1137              	.LVL87:
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 1138              		.loc 1 19 26 view .LVU430
+ 1139 0148 B0E7     		b	.L21
+ 1140              	.LVL88:
+ 1141              	.L18:
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 1142              		.loc 1 19 26 view .LVU431
+ 1143              	.LBE59:
+ 1144              	.LBE151:
+ 140:Src/Soft_SPI.c ****     }
+ 1145              		.loc 1 140 7 is_stmt 1 view .LVU432
+ 1146              	.LBB152:
+  17:Src/Soft_SPI.c **** {
+ 1147              		.loc 1 17 20 view .LVU433
+ 1148              	.LBB60:
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 1149              		.loc 1 19 3 view .LVU434
+ARM GAS  /tmp/ccZYoZDJ.s 			page 30
+
+
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 1150              		.loc 1 19 31 is_stmt 0 view .LVU435
+ 1151 014a 0125     		movs	r5, #1
+ 1152 014c 05FA0EF5 		lsl	r5, r5, lr
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 1153              		.loc 1 19 26 view .LVU436
+ 1154 0150 9561     		str	r5, [r2, #24]
+ 1155              	.LVL89:
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 1156              		.loc 1 19 26 view .LVU437
+ 1157 0152 9CE7     		b	.L19
+ 1158              	.LVL90:
+ 1159              	.L16:
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 1160              		.loc 1 19 26 view .LVU438
+ 1161              	.LBE60:
+ 1162              	.LBE152:
+ 140:Src/Soft_SPI.c ****     }
+ 1163              		.loc 1 140 7 is_stmt 1 view .LVU439
+ 1164              	.LBB153:
+  17:Src/Soft_SPI.c **** {
+ 1165              		.loc 1 17 20 view .LVU440
+ 1166              	.LBB61:
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 1167              		.loc 1 19 3 view .LVU441
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 1168              		.loc 1 19 31 is_stmt 0 view .LVU442
+ 1169 0154 0125     		movs	r5, #1
+ 1170 0156 05FA0EF5 		lsl	r5, r5, lr
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 1171              		.loc 1 19 26 view .LVU443
+ 1172 015a 9561     		str	r5, [r2, #24]
+ 1173              	.LVL91:
+  19:Src/Soft_SPI.c ****   //timer_delay_us(spi_struct->data_hold_us);
+ 1174              		.loc 1 19 26 view .LVU444
+ 1175 015c 88E7     		b	.L17
+ 1176              	.LBE61:
+ 1177              	.LBE153:
+ 1178              	.LBE156:
+ 1179              		.cfi_endproc
+ 1180              	.LFE141:
+ 1182 015e 00BF     		.text
+ 1183              	.Letext0:
+ 1184              		.file 2 "/usr/arm-none-eabi/include/machine/_default_types.h"
+ 1185              		.file 3 "/usr/arm-none-eabi/include/sys/_stdint.h"
+ 1186              		.file 4 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f401xc.h"
+ 1187              		.file 5 "Inc/Soft_SPI.h"
+ 1188              		.file 6 "Inc/gpio_helper.h"
+ARM GAS  /tmp/ccZYoZDJ.s 			page 31
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Soft_SPI.c
+     /tmp/ccZYoZDJ.s:19     .text.spi_create:00000000 $t
+     /tmp/ccZYoZDJ.s:26     .text.spi_create:00000000 spi_create
+     /tmp/ccZYoZDJ.s:87     .text.spi_init:00000000 $t
+     /tmp/ccZYoZDJ.s:94     .text.spi_init:00000000 spi_init
+     /tmp/ccZYoZDJ.s:266    .text.spi_start:00000000 $t
+     /tmp/ccZYoZDJ.s:273    .text.spi_start:00000000 spi_start
+     /tmp/ccZYoZDJ.s:309    .text.spi_stop:00000000 $t
+     /tmp/ccZYoZDJ.s:316    .text.spi_stop:00000000 spi_stop
+     /tmp/ccZYoZDJ.s:349    .text.spi_write:00000000 $t
+     /tmp/ccZYoZDJ.s:356    .text.spi_write:00000000 spi_write
+
+UNDEFINED SYMBOLS
+gpio_setup_full

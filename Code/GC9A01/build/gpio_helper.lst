@@ -1,0 +1,570 @@
+ARM GAS  /tmp/cc0k97Aa.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 23, 1
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 2
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"gpio_helper.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.file 1 "Src/gpio_helper.c"
+  18              		.section	.text.gpio_setup_basic,"ax",%progbits
+  19              		.align	1
+  20              		.p2align 2,,3
+  21              		.global	gpio_setup_basic
+  22              		.syntax unified
+  23              		.thumb
+  24              		.thumb_func
+  26              	gpio_setup_basic:
+  27              	.LVL0:
+  28              	.LFB130:
+   1:Src/gpio_helper.c **** #include "gpio_helper.h"
+   2:Src/gpio_helper.c **** 
+   3:Src/gpio_helper.c **** void gpio_setup_basic(GPIO_TypeDef* port, uint16_t pin, uint8_t port_mode)
+   4:Src/gpio_helper.c **** {
+  29              		.loc 1 4 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+   5:Src/gpio_helper.c ****     // Error Handling
+   6:Src/gpio_helper.c ****     if(port == NULL)
+  34              		.loc 1 6 5 view .LVU1
+  35              		.loc 1 6 7 is_stmt 0 view .LVU2
+  36 0000 08B1     		cbz	r0, .L7
+   7:Src/gpio_helper.c ****     {
+   8:Src/gpio_helper.c ****         // Error
+   9:Src/gpio_helper.c ****         // Invalid port
+  10:Src/gpio_helper.c ****         ERROR_HANDLER("Invalid GPIO_TypeDef Port");
+  11:Src/gpio_helper.c ****     }
+  12:Src/gpio_helper.c ****     else if(pin > 15)
+  37              		.loc 1 12 10 is_stmt 1 view .LVU3
+  38              		.loc 1 12 12 is_stmt 0 view .LVU4
+  39 0002 0F29     		cmp	r1, #15
+  40 0004 00D9     		bls	.L11
+  41              	.L7:
+  42 0006 7047     		bx	lr
+  43              	.L11:
+  13:Src/gpio_helper.c ****     {
+  14:Src/gpio_helper.c ****         // Error
+  15:Src/gpio_helper.c ****         ERROR_HANDLER("Invalid Pin, each Port only has PIN0-PIN15");
+ARM GAS  /tmp/cc0k97Aa.s 			page 2
+
+
+  16:Src/gpio_helper.c ****     }
+  17:Src/gpio_helper.c ****     else if(port_mode > ANALOG)
+  44              		.loc 1 17 10 is_stmt 1 view .LVU5
+  45              		.loc 1 17 12 is_stmt 0 view .LVU6
+  46 0008 032A     		cmp	r2, #3
+  47 000a FCD8     		bhi	.L7
+  18:Src/gpio_helper.c ****     {
+  19:Src/gpio_helper.c ****         // Error
+  20:Src/gpio_helper.c ****         ERROR_HANDLER("Selected Port Mode doesnt exist");
+  21:Src/gpio_helper.c ****     }
+  22:Src/gpio_helper.c ****     else
+  23:Src/gpio_helper.c ****     {
+  24:Src/gpio_helper.c ****         // Clear the Moder Bits before setting them
+  25:Src/gpio_helper.c ****         port->MODER &= ~(3 << (pin * 2));
+  48              		.loc 1 25 9 is_stmt 1 view .LVU7
+  49              		.loc 1 25 36 is_stmt 0 view .LVU8
+  50 000c 0FFA81FC 		sxth	ip, r1
+   4:Src/gpio_helper.c ****     // Error Handling
+  51              		.loc 1 4 1 view .LVU9
+  52 0010 10B4     		push	{r4}
+  53              	.LCFI0:
+  54              		.cfi_def_cfa_offset 4
+  55              		.cfi_offset 4, -4
+  56              		.loc 1 25 36 view .LVU10
+  57 0012 4FEA4C0C 		lsl	ip, ip, #1
+  58              		.loc 1 25 13 view .LVU11
+  59 0016 0468     		ldr	r4, [r0]
+  60              		.loc 1 25 28 view .LVU12
+  61 0018 0323     		movs	r3, #3
+  62 001a 03FA0CF3 		lsl	r3, r3, ip
+  63              		.loc 1 25 21 view .LVU13
+  64 001e 24EA0304 		bic	r4, r4, r3
+  65 0022 0460     		str	r4, [r0]
+  26:Src/gpio_helper.c ****         port->MODER |= (port_mode << (pin * 2));
+  66              		.loc 1 26 9 is_stmt 1 view .LVU14
+  67              		.loc 1 26 13 is_stmt 0 view .LVU15
+  68 0024 0468     		ldr	r4, [r0]
+  69              		.loc 1 26 35 view .LVU16
+  70 0026 02FA0CF2 		lsl	r2, r2, ip
+  71              	.LVL1:
+  72              		.loc 1 26 21 view .LVU17
+  73 002a 2243     		orrs	r2, r2, r4
+  74 002c 0260     		str	r2, [r0]
+  27:Src/gpio_helper.c ****         
+  28:Src/gpio_helper.c ****         // Clear the Purpdr Bits before setting them
+  29:Src/gpio_helper.c ****         port->PUPDR &= ~(3 << (pin * 2));
+  75              		.loc 1 29 9 is_stmt 1 view .LVU18
+  76              		.loc 1 29 13 is_stmt 0 view .LVU19
+  77 002e C268     		ldr	r2, [r0, #12]
+  30:Src/gpio_helper.c ****         //port->PUPDR |= (NO_PULL << (pin * 2) Happens implicit due writing a zero
+  31:Src/gpio_helper.c **** 
+  32:Src/gpio_helper.c ****         // Clear the OTYPER bits before setting them
+  33:Src/gpio_helper.c ****         port->OTYPER &= ~(1 << pin);
+  34:Src/gpio_helper.c ****         //port->OTYPER |= (PUSH_PULL << pin); Happens implicit due writing a zero
+  35:Src/gpio_helper.c **** 
+  36:Src/gpio_helper.c ****         // Clear the OTYPER bits before setting them
+  37:Src/gpio_helper.c ****         port->OSPEEDR &= ~(3 << (pin * 2));
+ARM GAS  /tmp/cc0k97Aa.s 			page 3
+
+
+  38:Src/gpio_helper.c ****         //port->OSPEEDR |= (LOW_SPEED << pin); Happens implicit due writing a zero
+  39:Src/gpio_helper.c ****     }
+  40:Src/gpio_helper.c **** }
+  78              		.loc 1 40 1 view .LVU20
+  79 0030 5DF8044B 		ldr	r4, [sp], #4
+  80              	.LCFI1:
+  81              		.cfi_restore 4
+  82              		.cfi_def_cfa_offset 0
+  29:Src/gpio_helper.c ****         //port->PUPDR |= (NO_PULL << (pin * 2) Happens implicit due writing a zero
+  83              		.loc 1 29 21 view .LVU21
+  84 0034 22EA0302 		bic	r2, r2, r3
+  85 0038 C260     		str	r2, [r0, #12]
+  33:Src/gpio_helper.c ****         //port->OTYPER |= (PUSH_PULL << pin); Happens implicit due writing a zero
+  86              		.loc 1 33 9 is_stmt 1 view .LVU22
+  33:Src/gpio_helper.c ****         //port->OTYPER |= (PUSH_PULL << pin); Happens implicit due writing a zero
+  87              		.loc 1 33 13 is_stmt 0 view .LVU23
+  88 003a 4268     		ldr	r2, [r0, #4]
+  33:Src/gpio_helper.c ****         //port->OTYPER |= (PUSH_PULL << pin); Happens implicit due writing a zero
+  89              		.loc 1 33 29 view .LVU24
+  90 003c 4FF0010C 		mov	ip, #1
+  91 0040 0CFA01F1 		lsl	r1, ip, r1
+  92              	.LVL2:
+  33:Src/gpio_helper.c ****         //port->OTYPER |= (PUSH_PULL << pin); Happens implicit due writing a zero
+  93              		.loc 1 33 22 view .LVU25
+  94 0044 22EA0102 		bic	r2, r2, r1
+  95 0048 4260     		str	r2, [r0, #4]
+  37:Src/gpio_helper.c ****         //port->OSPEEDR |= (LOW_SPEED << pin); Happens implicit due writing a zero
+  96              		.loc 1 37 9 is_stmt 1 view .LVU26
+  37:Src/gpio_helper.c ****         //port->OSPEEDR |= (LOW_SPEED << pin); Happens implicit due writing a zero
+  97              		.loc 1 37 13 is_stmt 0 view .LVU27
+  98 004a 8268     		ldr	r2, [r0, #8]
+  37:Src/gpio_helper.c ****         //port->OSPEEDR |= (LOW_SPEED << pin); Happens implicit due writing a zero
+  99              		.loc 1 37 23 view .LVU28
+ 100 004c 22EA0303 		bic	r3, r2, r3
+ 101 0050 8360     		str	r3, [r0, #8]
+ 102              		.loc 1 40 1 view .LVU29
+ 103 0052 7047     		bx	lr
+ 104              		.cfi_endproc
+ 105              	.LFE130:
+ 107              		.section	.text.gpio_setup_normal,"ax",%progbits
+ 108              		.align	1
+ 109              		.p2align 2,,3
+ 110              		.global	gpio_setup_normal
+ 111              		.syntax unified
+ 112              		.thumb
+ 113              		.thumb_func
+ 115              	gpio_setup_normal:
+ 116              	.LVL3:
+ 117              	.LFB131:
+  41:Src/gpio_helper.c **** 
+  42:Src/gpio_helper.c **** void gpio_setup_normal(GPIO_TypeDef* port, uint16_t pin, uint8_t port_mode, uint8_t pull_type)
+  43:Src/gpio_helper.c **** {
+ 118              		.loc 1 43 1 is_stmt 1 view -0
+ 119              		.cfi_startproc
+ 120              		@ args = 0, pretend = 0, frame = 0
+ 121              		@ frame_needed = 0, uses_anonymous_args = 0
+  44:Src/gpio_helper.c ****     // Error Handling
+ARM GAS  /tmp/cc0k97Aa.s 			page 4
+
+
+  45:Src/gpio_helper.c ****     if(port == NULL)
+ 122              		.loc 1 45 5 view .LVU31
+ 123              		.loc 1 45 7 is_stmt 0 view .LVU32
+ 124 0000 08B1     		cbz	r0, .L18
+  46:Src/gpio_helper.c ****     {
+  47:Src/gpio_helper.c ****         // Error
+  48:Src/gpio_helper.c ****         // Invalid port
+  49:Src/gpio_helper.c ****         ERROR_HANDLER("Invalid GPIO_TypeDef Port");
+  50:Src/gpio_helper.c ****     }
+  51:Src/gpio_helper.c ****     else if(pin > 15)
+ 125              		.loc 1 51 10 is_stmt 1 view .LVU33
+ 126              		.loc 1 51 12 is_stmt 0 view .LVU34
+ 127 0002 0F29     		cmp	r1, #15
+ 128 0004 00D9     		bls	.L21
+ 129              	.L18:
+ 130 0006 7047     		bx	lr
+ 131              	.L21:
+  52:Src/gpio_helper.c ****     {
+  53:Src/gpio_helper.c ****         // Error
+  54:Src/gpio_helper.c ****         ERROR_HANDLER("Invalid Pin, each Port only has PIN0-PIN15");
+  55:Src/gpio_helper.c ****     }
+  56:Src/gpio_helper.c ****     else if(port_mode > ANALOG)
+ 132              		.loc 1 56 10 is_stmt 1 view .LVU35
+ 133              		.loc 1 56 12 is_stmt 0 view .LVU36
+ 134 0008 032A     		cmp	r2, #3
+ 135 000a FCD8     		bhi	.L18
+  57:Src/gpio_helper.c ****     {
+  58:Src/gpio_helper.c ****         // Error
+  59:Src/gpio_helper.c ****         ERROR_HANDLER("Selected Port Mode doesnt exist");
+  60:Src/gpio_helper.c ****     }
+  61:Src/gpio_helper.c ****     else if(pull_type >= RESERVED)
+ 136              		.loc 1 61 10 is_stmt 1 view .LVU37
+ 137              		.loc 1 61 12 is_stmt 0 view .LVU38
+ 138 000c 022B     		cmp	r3, #2
+ 139 000e FAD8     		bhi	.L18
+  62:Src/gpio_helper.c ****     {
+  63:Src/gpio_helper.c ****         if(pull_type == RESERVED)
+  64:Src/gpio_helper.c ****         {
+  65:Src/gpio_helper.c ****             ERROR_HANDLER("Selected Pull Type is reserved");
+  66:Src/gpio_helper.c ****         }
+  67:Src/gpio_helper.c ****         else
+  68:Src/gpio_helper.c ****         {
+  69:Src/gpio_helper.c ****             ERROR_HANDLER("Selected Pull Type doesnt exist");
+  70:Src/gpio_helper.c ****         }
+  71:Src/gpio_helper.c ****     }
+  72:Src/gpio_helper.c ****     else
+  73:Src/gpio_helper.c ****     {
+  74:Src/gpio_helper.c ****         // Clear the Moder Bits before setting them
+  75:Src/gpio_helper.c ****         port->MODER &= ~(3 << (pin * 2));
+ 140              		.loc 1 75 9 is_stmt 1 view .LVU39
+  43:Src/gpio_helper.c ****     // Error Handling
+ 141              		.loc 1 43 1 is_stmt 0 view .LVU40
+ 142 0010 10B5     		push	{r4, lr}
+ 143              	.LCFI2:
+ 144              		.cfi_def_cfa_offset 8
+ 145              		.cfi_offset 4, -8
+ 146              		.cfi_offset 14, -4
+ARM GAS  /tmp/cc0k97Aa.s 			page 5
+
+
+ 147              		.loc 1 75 36 view .LVU41
+ 148 0012 0FFA81FE 		sxth	lr, r1
+ 149              		.loc 1 75 13 view .LVU42
+ 150 0016 0468     		ldr	r4, [r0]
+ 151              		.loc 1 75 36 view .LVU43
+ 152 0018 4FEA4E0E 		lsl	lr, lr, #1
+ 153              		.loc 1 75 28 view .LVU44
+ 154 001c 4FF0030C 		mov	ip, #3
+ 155 0020 0CFA0EFC 		lsl	ip, ip, lr
+ 156              		.loc 1 75 21 view .LVU45
+ 157 0024 24EA0C04 		bic	r4, r4, ip
+ 158 0028 0460     		str	r4, [r0]
+  76:Src/gpio_helper.c ****         port->MODER |= (port_mode << (pin * 2));
+ 159              		.loc 1 76 9 is_stmt 1 view .LVU46
+ 160              		.loc 1 76 13 is_stmt 0 view .LVU47
+ 161 002a 0468     		ldr	r4, [r0]
+ 162              		.loc 1 76 35 view .LVU48
+ 163 002c 02FA0EF2 		lsl	r2, r2, lr
+ 164              	.LVL4:
+ 165              		.loc 1 76 21 view .LVU49
+ 166 0030 2243     		orrs	r2, r2, r4
+ 167 0032 0260     		str	r2, [r0]
+  77:Src/gpio_helper.c ****         
+  78:Src/gpio_helper.c ****         // Clear the Purpdr Bits before setting them
+  79:Src/gpio_helper.c ****         port->PUPDR &= ~(3 << (pin * 2));
+ 168              		.loc 1 79 9 is_stmt 1 view .LVU50
+ 169              		.loc 1 79 13 is_stmt 0 view .LVU51
+ 170 0034 C268     		ldr	r2, [r0, #12]
+ 171              		.loc 1 79 21 view .LVU52
+ 172 0036 22EA0C02 		bic	r2, r2, ip
+ 173 003a C260     		str	r2, [r0, #12]
+  80:Src/gpio_helper.c ****         port->PUPDR |= (pull_type << (pin * 2));
+ 174              		.loc 1 80 9 is_stmt 1 view .LVU53
+ 175              		.loc 1 80 13 is_stmt 0 view .LVU54
+ 176 003c C268     		ldr	r2, [r0, #12]
+ 177              		.loc 1 80 35 view .LVU55
+ 178 003e 03FA0EF3 		lsl	r3, r3, lr
+ 179              	.LVL5:
+ 180              		.loc 1 80 21 view .LVU56
+ 181 0042 1343     		orrs	r3, r3, r2
+ 182 0044 C360     		str	r3, [r0, #12]
+  81:Src/gpio_helper.c **** 
+  82:Src/gpio_helper.c ****         // Clear the OTYPER bits before setting them
+  83:Src/gpio_helper.c ****         port->OTYPER &= ~(1 << pin);
+ 183              		.loc 1 83 9 is_stmt 1 view .LVU57
+ 184              		.loc 1 83 13 is_stmt 0 view .LVU58
+ 185 0046 4368     		ldr	r3, [r0, #4]
+ 186              		.loc 1 83 29 view .LVU59
+ 187 0048 0122     		movs	r2, #1
+ 188 004a 8A40     		lsls	r2, r2, r1
+ 189              		.loc 1 83 22 view .LVU60
+ 190 004c 23EA0203 		bic	r3, r3, r2
+ 191 0050 4360     		str	r3, [r0, #4]
+  84:Src/gpio_helper.c ****         //port->OTYPER |= (PUSH_PULL << pin); Happens implicit due writing a zero
+  85:Src/gpio_helper.c **** 
+  86:Src/gpio_helper.c ****         // Clear the OTYPER bits before setting them
+  87:Src/gpio_helper.c ****         port->OSPEEDR &= ~(3 << (pin * 2));
+ARM GAS  /tmp/cc0k97Aa.s 			page 6
+
+
+ 192              		.loc 1 87 9 is_stmt 1 view .LVU61
+ 193              		.loc 1 87 13 is_stmt 0 view .LVU62
+ 194 0052 8368     		ldr	r3, [r0, #8]
+ 195              		.loc 1 87 23 view .LVU63
+ 196 0054 23EA0C03 		bic	r3, r3, ip
+ 197 0058 8360     		str	r3, [r0, #8]
+  88:Src/gpio_helper.c ****         //port->OSPEEDR |= (LOW_SPEED << pin); Happens implicit due writing a zero
+  89:Src/gpio_helper.c ****     }    
+  90:Src/gpio_helper.c **** }
+ 198              		.loc 1 90 1 view .LVU64
+ 199 005a 10BD     		pop	{r4, pc}
+ 200              		.cfi_endproc
+ 201              	.LFE131:
+ 203              		.section	.text.gpio_setup_full,"ax",%progbits
+ 204              		.align	1
+ 205              		.p2align 2,,3
+ 206              		.global	gpio_setup_full
+ 207              		.syntax unified
+ 208              		.thumb
+ 209              		.thumb_func
+ 211              	gpio_setup_full:
+ 212              	.LVL6:
+ 213              	.LFB132:
+  91:Src/gpio_helper.c **** 
+  92:Src/gpio_helper.c **** void gpio_setup_full(GPIO_TypeDef* port, uint16_t pin, uint8_t port_mode, uint8_t pull_type, uint8_
+  93:Src/gpio_helper.c **** {
+ 214              		.loc 1 93 1 is_stmt 1 view -0
+ 215              		.cfi_startproc
+ 216              		@ args = 8, pretend = 0, frame = 0
+ 217              		@ frame_needed = 0, uses_anonymous_args = 0
+  94:Src/gpio_helper.c ****     // Error Handling
+  95:Src/gpio_helper.c ****     if(port == NULL)
+ 218              		.loc 1 95 5 view .LVU66
+  93:Src/gpio_helper.c ****     // Error Handling
+ 219              		.loc 1 93 1 is_stmt 0 view .LVU67
+ 220 0000 70B5     		push	{r4, r5, r6, lr}
+ 221              	.LCFI3:
+ 222              		.cfi_def_cfa_offset 16
+ 223              		.cfi_offset 4, -16
+ 224              		.cfi_offset 5, -12
+ 225              		.cfi_offset 6, -8
+ 226              		.cfi_offset 14, -4
+  93:Src/gpio_helper.c ****     // Error Handling
+ 227              		.loc 1 93 1 view .LVU68
+ 228 0002 9DF810C0 		ldrb	ip, [sp, #16]	@ zero_extendqisi2
+ 229 0006 9DF814E0 		ldrb	lr, [sp, #20]	@ zero_extendqisi2
+ 230              		.loc 1 95 7 view .LVU69
+ 231 000a 08B1     		cbz	r0, .L22
+  96:Src/gpio_helper.c ****     {
+  97:Src/gpio_helper.c ****         // Error
+  98:Src/gpio_helper.c ****         // Invalid port
+  99:Src/gpio_helper.c ****         ERROR_HANDLER("Invalid GPIO_TypeDef Port");
+ 100:Src/gpio_helper.c ****     }
+ 101:Src/gpio_helper.c ****     else if(pin > 15)
+ 232              		.loc 1 101 10 is_stmt 1 view .LVU70
+ 233              		.loc 1 101 12 is_stmt 0 view .LVU71
+ 234 000c 0F29     		cmp	r1, #15
+ARM GAS  /tmp/cc0k97Aa.s 			page 7
+
+
+ 235 000e 00D9     		bls	.L28
+ 236              	.L22:
+ 102:Src/gpio_helper.c ****     {
+ 103:Src/gpio_helper.c ****         // Error
+ 104:Src/gpio_helper.c ****         ERROR_HANDLER("Invalid Pin, each Port only has PIN0-PIN15");
+ 105:Src/gpio_helper.c ****     }
+ 106:Src/gpio_helper.c ****     else if(port_mode > ANALOG)
+ 107:Src/gpio_helper.c ****     {
+ 108:Src/gpio_helper.c ****         // Error
+ 109:Src/gpio_helper.c ****         ERROR_HANDLER("Selected Port Mode doesnt exist");
+ 110:Src/gpio_helper.c ****     }
+ 111:Src/gpio_helper.c ****     else if(pull_type >= RESERVED)
+ 112:Src/gpio_helper.c ****     {
+ 113:Src/gpio_helper.c ****         if(pull_type == RESERVED)
+ 114:Src/gpio_helper.c ****         {
+ 115:Src/gpio_helper.c ****             ERROR_HANDLER("Selected Pull Type is reserved");
+ 116:Src/gpio_helper.c ****         }
+ 117:Src/gpio_helper.c ****         else
+ 118:Src/gpio_helper.c ****         {
+ 119:Src/gpio_helper.c ****             ERROR_HANDLER("Selected Pull Type doesnt exist");
+ 120:Src/gpio_helper.c ****         }
+ 121:Src/gpio_helper.c ****     }
+ 122:Src/gpio_helper.c ****     else if(output_type > OPEN_DRAIN)
+ 123:Src/gpio_helper.c ****     {
+ 124:Src/gpio_helper.c ****         ERROR_HANDLER("Selected Output Type doesnt exist");
+ 125:Src/gpio_helper.c ****     }
+ 126:Src/gpio_helper.c ****     else if(output_type > VERY_HIGH_SPEED)
+ 127:Src/gpio_helper.c ****     {
+ 128:Src/gpio_helper.c ****         ERROR_HANDLER("Theres no Super very high speed bro");
+ 129:Src/gpio_helper.c ****     }
+ 130:Src/gpio_helper.c ****     else
+ 131:Src/gpio_helper.c ****     {
+ 132:Src/gpio_helper.c ****         // Clear the Moder Bits before setting them
+ 133:Src/gpio_helper.c ****         port->MODER &= ~(3 << (pin * 2));
+ 134:Src/gpio_helper.c ****         port->MODER |= (port_mode << (pin * 2));
+ 135:Src/gpio_helper.c ****         
+ 136:Src/gpio_helper.c ****         // Clear the Purpdr Bits before setting them
+ 137:Src/gpio_helper.c ****         port->PUPDR &= ~(3 << (pin * 2));
+ 138:Src/gpio_helper.c ****         port->PUPDR |= (pull_type << (pin * 2));
+ 139:Src/gpio_helper.c **** 
+ 140:Src/gpio_helper.c ****         // Clear the OTYPER bits before setting them
+ 141:Src/gpio_helper.c ****         port->OTYPER &= ~(1 << pin);
+ 142:Src/gpio_helper.c ****         port->OTYPER |= (output_type << pin);
+ 143:Src/gpio_helper.c **** 
+ 144:Src/gpio_helper.c ****         // Clear the OTYPER bits before setting them
+ 145:Src/gpio_helper.c ****         port->OSPEEDR &= ~(3 << (pin * 2));
+ 146:Src/gpio_helper.c ****         port->OSPEEDR |= (speed << (pin * 2));
+ 147:Src/gpio_helper.c ****     }
+ 148:Src/gpio_helper.c **** }...
+ 237              		.loc 1 148 1 view .LVU72
+ 238 0010 70BD     		pop	{r4, r5, r6, pc}
+ 239              	.LVL7:
+ 240              	.L28:
+ 106:Src/gpio_helper.c ****     else if(port_mode > ANALOG)
+ 241              		.loc 1 106 10 is_stmt 1 view .LVU73
+ 106:Src/gpio_helper.c ****     else if(port_mode > ANALOG)
+ 242              		.loc 1 106 12 is_stmt 0 view .LVU74
+ARM GAS  /tmp/cc0k97Aa.s 			page 8
+
+
+ 243 0012 032A     		cmp	r2, #3
+ 244 0014 FCD8     		bhi	.L22
+ 111:Src/gpio_helper.c ****     else if(pull_type >= RESERVED)
+ 245              		.loc 1 111 10 is_stmt 1 view .LVU75
+ 111:Src/gpio_helper.c ****     else if(pull_type >= RESERVED)
+ 246              		.loc 1 111 12 is_stmt 0 view .LVU76
+ 247 0016 022B     		cmp	r3, #2
+ 248 0018 FAD8     		bhi	.L22
+ 122:Src/gpio_helper.c ****     else if(output_type > OPEN_DRAIN)
+ 249              		.loc 1 122 10 is_stmt 1 view .LVU77
+ 122:Src/gpio_helper.c ****     else if(output_type > OPEN_DRAIN)
+ 250              		.loc 1 122 12 is_stmt 0 view .LVU78
+ 251 001a BCF1010F 		cmp	ip, #1
+ 252 001e F7D8     		bhi	.L22
+ 126:Src/gpio_helper.c ****     else if(output_type > VERY_HIGH_SPEED)
+ 253              		.loc 1 126 10 is_stmt 1 view .LVU79
+ 133:Src/gpio_helper.c ****         port->MODER &= ~(3 << (pin * 2));
+ 254              		.loc 1 133 9 view .LVU80
+ 142:Src/gpio_helper.c ****         port->OTYPER |= (output_type << pin);
+ 255              		.loc 1 142 38 is_stmt 0 view .LVU81
+ 256 0020 0CFA01F4 		lsl	r4, ip, r1
+ 133:Src/gpio_helper.c ****         port->MODER &= ~(3 << (pin * 2));
+ 257              		.loc 1 133 36 view .LVU82
+ 258 0024 0FFA81FC 		sxth	ip, r1
+ 133:Src/gpio_helper.c ****         port->MODER &= ~(3 << (pin * 2));
+ 259              		.loc 1 133 13 view .LVU83
+ 260 0028 0568     		ldr	r5, [r0]
+ 133:Src/gpio_helper.c ****         port->MODER &= ~(3 << (pin * 2));
+ 261              		.loc 1 133 36 view .LVU84
+ 262 002a 4FEA4C0C 		lsl	ip, ip, #1
+ 133:Src/gpio_helper.c ****         port->MODER &= ~(3 << (pin * 2));
+ 263              		.loc 1 133 28 view .LVU85
+ 264 002e 0326     		movs	r6, #3
+ 134:Src/gpio_helper.c ****         port->MODER |= (port_mode << (pin * 2));
+ 265              		.loc 1 134 35 view .LVU86
+ 266 0030 02FA0CF2 		lsl	r2, r2, ip
+ 267              	.LVL8:
+ 138:Src/gpio_helper.c ****         port->PUPDR |= (pull_type << (pin * 2));
+ 268              		.loc 1 138 35 view .LVU87
+ 269 0034 03FA0CF3 		lsl	r3, r3, ip
+ 270              	.LVL9:
+ 146:Src/gpio_helper.c ****         port->OSPEEDR |= (speed << (pin * 2));
+ 271              		.loc 1 146 33 view .LVU88
+ 272 0038 0EFA0CFE 		lsl	lr, lr, ip
+ 133:Src/gpio_helper.c ****         port->MODER &= ~(3 << (pin * 2));
+ 273              		.loc 1 133 28 view .LVU89
+ 274 003c 06FA0CFC 		lsl	ip, r6, ip
+ 133:Src/gpio_helper.c ****         port->MODER &= ~(3 << (pin * 2));
+ 275              		.loc 1 133 21 view .LVU90
+ 276 0040 25EA0C05 		bic	r5, r5, ip
+ 277 0044 0560     		str	r5, [r0]
+ 134:Src/gpio_helper.c ****         port->MODER |= (port_mode << (pin * 2));
+ 278              		.loc 1 134 9 is_stmt 1 view .LVU91
+ 134:Src/gpio_helper.c ****         port->MODER |= (port_mode << (pin * 2));
+ 279              		.loc 1 134 13 is_stmt 0 view .LVU92
+ 280 0046 0568     		ldr	r5, [r0]
+ 134:Src/gpio_helper.c ****         port->MODER |= (port_mode << (pin * 2));
+ARM GAS  /tmp/cc0k97Aa.s 			page 9
+
+
+ 281              		.loc 1 134 21 view .LVU93
+ 282 0048 2A43     		orrs	r2, r2, r5
+ 283 004a 0260     		str	r2, [r0]
+ 137:Src/gpio_helper.c ****         port->PUPDR &= ~(3 << (pin * 2));
+ 284              		.loc 1 137 9 is_stmt 1 view .LVU94
+ 137:Src/gpio_helper.c ****         port->PUPDR &= ~(3 << (pin * 2));
+ 285              		.loc 1 137 13 is_stmt 0 view .LVU95
+ 286 004c C268     		ldr	r2, [r0, #12]
+ 137:Src/gpio_helper.c ****         port->PUPDR &= ~(3 << (pin * 2));
+ 287              		.loc 1 137 21 view .LVU96
+ 288 004e 22EA0C02 		bic	r2, r2, ip
+ 289 0052 C260     		str	r2, [r0, #12]
+ 138:Src/gpio_helper.c ****         port->PUPDR |= (pull_type << (pin * 2));
+ 290              		.loc 1 138 9 is_stmt 1 view .LVU97
+ 138:Src/gpio_helper.c ****         port->PUPDR |= (pull_type << (pin * 2));
+ 291              		.loc 1 138 13 is_stmt 0 view .LVU98
+ 292 0054 C268     		ldr	r2, [r0, #12]
+ 138:Src/gpio_helper.c ****         port->PUPDR |= (pull_type << (pin * 2));
+ 293              		.loc 1 138 21 view .LVU99
+ 294 0056 1343     		orrs	r3, r3, r2
+ 295 0058 C360     		str	r3, [r0, #12]
+ 141:Src/gpio_helper.c ****         port->OTYPER &= ~(1 << pin);
+ 296              		.loc 1 141 9 is_stmt 1 view .LVU100
+ 141:Src/gpio_helper.c ****         port->OTYPER &= ~(1 << pin);
+ 297              		.loc 1 141 13 is_stmt 0 view .LVU101
+ 298 005a 4368     		ldr	r3, [r0, #4]
+ 141:Src/gpio_helper.c ****         port->OTYPER &= ~(1 << pin);
+ 299              		.loc 1 141 29 view .LVU102
+ 300 005c 0122     		movs	r2, #1
+ 301 005e 8A40     		lsls	r2, r2, r1
+ 141:Src/gpio_helper.c ****         port->OTYPER &= ~(1 << pin);
+ 302              		.loc 1 141 22 view .LVU103
+ 303 0060 23EA0203 		bic	r3, r3, r2
+ 304 0064 4360     		str	r3, [r0, #4]
+ 142:Src/gpio_helper.c ****         port->OTYPER |= (output_type << pin);
+ 305              		.loc 1 142 9 is_stmt 1 view .LVU104
+ 142:Src/gpio_helper.c ****         port->OTYPER |= (output_type << pin);
+ 306              		.loc 1 142 13 is_stmt 0 view .LVU105
+ 307 0066 4368     		ldr	r3, [r0, #4]
+ 142:Src/gpio_helper.c ****         port->OTYPER |= (output_type << pin);
+ 308              		.loc 1 142 22 view .LVU106
+ 309 0068 2343     		orrs	r3, r3, r4
+ 310 006a 4360     		str	r3, [r0, #4]
+ 145:Src/gpio_helper.c ****         port->OSPEEDR &= ~(3 << (pin * 2));
+ 311              		.loc 1 145 9 is_stmt 1 view .LVU107
+ 145:Src/gpio_helper.c ****         port->OSPEEDR &= ~(3 << (pin * 2));
+ 312              		.loc 1 145 13 is_stmt 0 view .LVU108
+ 313 006c 8368     		ldr	r3, [r0, #8]
+ 145:Src/gpio_helper.c ****         port->OSPEEDR &= ~(3 << (pin * 2));
+ 314              		.loc 1 145 23 view .LVU109
+ 315 006e 23EA0C03 		bic	r3, r3, ip
+ 316 0072 8360     		str	r3, [r0, #8]
+ 146:Src/gpio_helper.c ****         port->OSPEEDR |= (speed << (pin * 2));
+ 317              		.loc 1 146 9 is_stmt 1 view .LVU110
+ 146:Src/gpio_helper.c ****         port->OSPEEDR |= (speed << (pin * 2));
+ 318              		.loc 1 146 13 is_stmt 0 view .LVU111
+ 319 0074 8368     		ldr	r3, [r0, #8]
+ARM GAS  /tmp/cc0k97Aa.s 			page 10
+
+
+ 146:Src/gpio_helper.c ****         port->OSPEEDR |= (speed << (pin * 2));
+ 320              		.loc 1 146 23 view .LVU112
+ 321 0076 4EEA0303 		orr	r3, lr, r3
+ 322 007a 8360     		str	r3, [r0, #8]
+ 323              		.loc 1 148 1 view .LVU113
+ 324 007c 70BD     		pop	{r4, r5, r6, pc}
+ 325              		.loc 1 148 1 view .LVU114
+ 326              		.cfi_endproc
+ 327              	.LFE132:
+ 329 007e 00BF     		.text
+ 330              	.Letext0:
+ 331              		.file 2 "/usr/arm-none-eabi/include/machine/_default_types.h"
+ 332              		.file 3 "/usr/arm-none-eabi/include/sys/_stdint.h"
+ 333              		.file 4 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f401xc.h"
+ARM GAS  /tmp/cc0k97Aa.s 			page 11
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 gpio_helper.c
+     /tmp/cc0k97Aa.s:19     .text.gpio_setup_basic:00000000 $t
+     /tmp/cc0k97Aa.s:26     .text.gpio_setup_basic:00000000 gpio_setup_basic
+     /tmp/cc0k97Aa.s:108    .text.gpio_setup_normal:00000000 $t
+     /tmp/cc0k97Aa.s:115    .text.gpio_setup_normal:00000000 gpio_setup_normal
+     /tmp/cc0k97Aa.s:204    .text.gpio_setup_full:00000000 $t
+     /tmp/cc0k97Aa.s:211    .text.gpio_setup_full:00000000 gpio_setup_full
+
+NO UNDEFINED SYMBOLS

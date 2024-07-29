@@ -1,0 +1,902 @@
+ARM GAS  /tmp/ccPlTcPl.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 23, 1
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 2
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"timer.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.file 1 "Src/timer.c"
+  18              		.section	.text.timer_init,"ax",%progbits
+  19              		.align	1
+  20              		.p2align 2,,3
+  21              		.global	timer_init
+  22              		.syntax unified
+  23              		.thumb
+  24              		.thumb_func
+  26              	timer_init:
+  27              	.LFB130:
+   1:Src/timer.c   **** #include "timer.h"
+   2:Src/timer.c   **** 
+   3:Src/timer.c   **** void timer_init(void)
+   4:Src/timer.c   **** {
+  28              		.loc 1 4 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 8
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		@ link register save eliminated.
+   5:Src/timer.c   ****     __disable_irq();
+  33              		.loc 1 5 5 view .LVU1
+  34              	.LBB25:
+  35              	.LBI25:
+  36              		.file 2 "Drivers/CMSIS/Include/cmsis_gcc.h"
+   1:Drivers/CMSIS/Include/cmsis_gcc.h **** /**************************************************************************//**
+   2:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @file     cmsis_gcc.h
+   3:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @brief    CMSIS compiler GCC header file
+   4:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @version  V5.0.4
+   5:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @date     09. April 2018
+   6:Drivers/CMSIS/Include/cmsis_gcc.h ****  ******************************************************************************/
+   7:Drivers/CMSIS/Include/cmsis_gcc.h **** /*
+   8:Drivers/CMSIS/Include/cmsis_gcc.h ****  * Copyright (c) 2009-2018 Arm Limited. All rights reserved.
+   9:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  10:Drivers/CMSIS/Include/cmsis_gcc.h ****  * SPDX-License-Identifier: Apache-2.0
+  11:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  12:Drivers/CMSIS/Include/cmsis_gcc.h ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  13:Drivers/CMSIS/Include/cmsis_gcc.h ****  * not use this file except in compliance with the License.
+  14:Drivers/CMSIS/Include/cmsis_gcc.h ****  * You may obtain a copy of the License at
+  15:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  16:Drivers/CMSIS/Include/cmsis_gcc.h ****  * www.apache.org/licenses/LICENSE-2.0
+  17:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+ARM GAS  /tmp/ccPlTcPl.s 			page 2
+
+
+  18:Drivers/CMSIS/Include/cmsis_gcc.h ****  * Unless required by applicable law or agreed to in writing, software
+  19:Drivers/CMSIS/Include/cmsis_gcc.h ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  20:Drivers/CMSIS/Include/cmsis_gcc.h ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  21:Drivers/CMSIS/Include/cmsis_gcc.h ****  * See the License for the specific language governing permissions and
+  22:Drivers/CMSIS/Include/cmsis_gcc.h ****  * limitations under the License.
+  23:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+  24:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  25:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef __CMSIS_GCC_H
+  26:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __CMSIS_GCC_H
+  27:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  28:Drivers/CMSIS/Include/cmsis_gcc.h **** /* ignore some GCC warnings */
+  29:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic push
+  30:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wsign-conversion"
+  31:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wconversion"
+  32:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wunused-parameter"
+  33:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  34:Drivers/CMSIS/Include/cmsis_gcc.h **** /* Fallback for __has_builtin */
+  35:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef __has_builtin
+  36:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __has_builtin(x) (0)
+  37:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  38:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  39:Drivers/CMSIS/Include/cmsis_gcc.h **** /* CMSIS compiler specific defines */
+  40:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __ASM
+  41:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __ASM                                  __asm
+  42:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  43:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __INLINE
+  44:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __INLINE                               inline
+  45:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  46:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __STATIC_INLINE
+  47:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __STATIC_INLINE                        static inline
+  48:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  49:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __STATIC_FORCEINLINE                 
+  50:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __STATIC_FORCEINLINE                   __attribute__((always_inline)) static inline
+  51:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif                                           
+  52:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __NO_RETURN
+  53:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __NO_RETURN                            __attribute__((__noreturn__))
+  54:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  55:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __USED
+  56:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __USED                                 __attribute__((used))
+  57:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  58:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __WEAK
+  59:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __WEAK                                 __attribute__((weak))
+  60:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  61:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __PACKED
+  62:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __PACKED                               __attribute__((packed, aligned(1)))
+  63:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  64:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __PACKED_STRUCT
+  65:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __PACKED_STRUCT                        struct __attribute__((packed, aligned(1)))
+  66:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  67:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __PACKED_UNION
+  68:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __PACKED_UNION                         union __attribute__((packed, aligned(1)))
+  69:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  70:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32        /* deprecated */
+  71:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  72:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  73:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  74:Drivers/CMSIS/Include/cmsis_gcc.h ****   struct __attribute__((packed)) T_UINT32 { uint32_t v; };
+ARM GAS  /tmp/ccPlTcPl.s 			page 3
+
+
+  75:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  76:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32(x)                  (((struct T_UINT32 *)(x))->v)
+  77:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  78:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT16_WRITE
+  79:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  80:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  81:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  82:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT16_WRITE { uint16_t v; };
+  83:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  84:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT16_WRITE(addr, val)    (void)((((struct T_UINT16_WRITE *)(void *)(addr))-
+  85:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  86:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT16_READ
+  87:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  88:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  89:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  90:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT16_READ { uint16_t v; };
+  91:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  92:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT16_READ(addr)          (((const struct T_UINT16_READ *)(const void *)(add
+  93:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  94:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32_WRITE
+  95:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  96:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  97:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  98:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT32_WRITE { uint32_t v; };
+  99:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+ 100:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32_WRITE(addr, val)    (void)((((struct T_UINT32_WRITE *)(void *)(addr))-
+ 101:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 102:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32_READ
+ 103:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+ 104:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+ 105:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+ 106:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT32_READ { uint32_t v; };
+ 107:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+ 108:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32_READ(addr)          (((const struct T_UINT32_READ *)(const void *)(add
+ 109:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 110:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __ALIGNED
+ 111:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __ALIGNED(x)                           __attribute__((aligned(x)))
+ 112:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 113:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __RESTRICT
+ 114:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __RESTRICT                             __restrict
+ 115:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 116:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 117:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 118:Drivers/CMSIS/Include/cmsis_gcc.h **** /* ###########################  Core Function Access  ########################### */
+ 119:Drivers/CMSIS/Include/cmsis_gcc.h **** /** \ingroup  CMSIS_Core_FunctionInterface
+ 120:Drivers/CMSIS/Include/cmsis_gcc.h ****     \defgroup CMSIS_Core_RegAccFunctions CMSIS Core Register Access Functions
+ 121:Drivers/CMSIS/Include/cmsis_gcc.h ****   @{
+ 122:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 123:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 124:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 125:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Enable IRQ Interrupts
+ 126:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Enables IRQ interrupts by clearing the I-bit in the CPSR.
+ 127:Drivers/CMSIS/Include/cmsis_gcc.h ****            Can only be executed in Privileged modes.
+ 128:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 129:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __enable_irq(void)
+ 130:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 131:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("cpsie i" : : : "memory");
+ARM GAS  /tmp/ccPlTcPl.s 			page 4
+
+
+ 132:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 133:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 134:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 135:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 136:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Disable IRQ Interrupts
+ 137:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Disables IRQ interrupts by setting the I-bit in the CPSR.
+ 138:Drivers/CMSIS/Include/cmsis_gcc.h ****            Can only be executed in Privileged modes.
+ 139:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 140:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __disable_irq(void)
+  37              		.loc 2 140 27 view .LVU2
+  38              	.LBB26:
+ 141:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 142:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("cpsid i" : : : "memory");
+  39              		.loc 2 142 3 view .LVU3
+  40              	.LBE26:
+  41              	.LBE25:
+   4:Src/timer.c   ****     __HAL_RCC_TIM2_CLK_ENABLE();
+  42              		.loc 1 4 1 is_stmt 0 view .LVU4
+  43 0000 10B4     		push	{r4}
+  44              	.LCFI0:
+  45              		.cfi_def_cfa_offset 4
+  46              		.cfi_offset 4, -4
+  47 0002 83B0     		sub	sp, sp, #12
+  48              	.LCFI1:
+  49              		.cfi_def_cfa_offset 16
+  50              	.LBB28:
+  51              	.LBB27:
+  52              		.loc 2 142 3 view .LVU5
+  53              		.syntax unified
+  54              	@ 142 "Drivers/CMSIS/Include/cmsis_gcc.h" 1
+  55 0004 72B6     		cpsid i
+  56              	@ 0 "" 2
+  57              		.thumb
+  58              		.syntax unified
+  59              	.LBE27:
+  60              	.LBE28:
+   6:Src/timer.c   ****     __HAL_RCC_TIM2_CLK_ENABLE();
+  61              		.loc 1 6 5 is_stmt 1 view .LVU6
+  62              	.LBB29:
+  63              		.loc 1 6 5 view .LVU7
+  64 0006 0022     		movs	r2, #0
+  65 0008 0D49     		ldr	r1, .L4
+  66 000a 0192     		str	r2, [sp, #4]
+  67              		.loc 1 6 5 view .LVU8
+  68 000c 086C     		ldr	r0, [r1, #64]
+  69 000e 40F00100 		orr	r0, r0, #1
+  70 0012 0864     		str	r0, [r1, #64]
+  71              		.loc 1 6 5 view .LVU9
+  72 0014 096C     		ldr	r1, [r1, #64]
+  73              	.LBE29:
+   7:Src/timer.c   ****     TIM2->CR1 = 0;
+  74              		.loc 1 7 15 is_stmt 0 view .LVU10
+  75 0016 4FF08043 		mov	r3, #1073741824
+  76              	.LBB30:
+   6:Src/timer.c   ****     __HAL_RCC_TIM2_CLK_ENABLE();
+  77              		.loc 1 6 5 view .LVU11
+  78 001a 01F00101 		and	r1, r1, #1
+ARM GAS  /tmp/ccPlTcPl.s 			page 5
+
+
+  79 001e 0191     		str	r1, [sp, #4]
+   6:Src/timer.c   ****     __HAL_RCC_TIM2_CLK_ENABLE();
+  80              		.loc 1 6 5 is_stmt 1 view .LVU12
+  81              	.LBE30:
+   8:Src/timer.c   ****     TIM2->CR2 = 0;
+   9:Src/timer.c   ****     TIM2->PSC = TIMER2_PRESCALER;
+  10:Src/timer.c   ****     TIM2->ARR = 0xFFFFFFFF;
+  82              		.loc 1 10 15 is_stmt 0 view .LVU13
+  83 0020 4FF0FF30 		mov	r0, #-1
+  11:Src/timer.c   ****     TIM2->DIER = 0;
+  12:Src/timer.c   ****     TIM2->EGR = TIM_EGR_UG;
+  84              		.loc 1 12 15 view .LVU14
+  85 0024 0121     		movs	r1, #1
+  86              	.LBB31:
+   6:Src/timer.c   ****     TIM2->CR1 = 0;
+  87              		.loc 1 6 5 view .LVU15
+  88 0026 019C     		ldr	r4, [sp, #4]
+  89              	.LBE31:
+   6:Src/timer.c   ****     TIM2->CR1 = 0;
+  90              		.loc 1 6 5 is_stmt 1 view .LVU16
+   7:Src/timer.c   ****     TIM2->CR2 = 0;
+  91              		.loc 1 7 5 view .LVU17
+   7:Src/timer.c   ****     TIM2->CR2 = 0;
+  92              		.loc 1 7 15 is_stmt 0 view .LVU18
+  93 0028 1A60     		str	r2, [r3]
+   8:Src/timer.c   ****     TIM2->PSC = TIMER2_PRESCALER;
+  94              		.loc 1 8 5 is_stmt 1 view .LVU19
+   8:Src/timer.c   ****     TIM2->PSC = TIMER2_PRESCALER;
+  95              		.loc 1 8 15 is_stmt 0 view .LVU20
+  96 002a 5A60     		str	r2, [r3, #4]
+   9:Src/timer.c   ****     TIM2->ARR = 0xFFFFFFFF;
+  97              		.loc 1 9 5 is_stmt 1 view .LVU21
+   9:Src/timer.c   ****     TIM2->ARR = 0xFFFFFFFF;
+  98              		.loc 1 9 15 is_stmt 0 view .LVU22
+  99 002c 9A62     		str	r2, [r3, #40]
+  10:Src/timer.c   ****     TIM2->DIER = 0;
+ 100              		.loc 1 10 5 is_stmt 1 view .LVU23
+  10:Src/timer.c   ****     TIM2->DIER = 0;
+ 101              		.loc 1 10 15 is_stmt 0 view .LVU24
+ 102 002e D862     		str	r0, [r3, #44]
+  11:Src/timer.c   ****     TIM2->EGR = TIM_EGR_UG;
+ 103              		.loc 1 11 5 is_stmt 1 view .LVU25
+  11:Src/timer.c   ****     TIM2->EGR = TIM_EGR_UG;
+ 104              		.loc 1 11 16 is_stmt 0 view .LVU26
+ 105 0030 DA60     		str	r2, [r3, #12]
+ 106              		.loc 1 12 5 is_stmt 1 view .LVU27
+ 107              		.loc 1 12 15 is_stmt 0 view .LVU28
+ 108 0032 5961     		str	r1, [r3, #20]
+  13:Src/timer.c   ****     TIM2->CR1 = TIM_CR1_CEN;
+ 109              		.loc 1 13 5 is_stmt 1 view .LVU29
+ 110              		.loc 1 13 15 is_stmt 0 view .LVU30
+ 111 0034 1960     		str	r1, [r3]
+  14:Src/timer.c   ****     __enable_irq();
+ 112              		.loc 1 14 5 is_stmt 1 view .LVU31
+ 113              	.LBB32:
+ 114              	.LBI32:
+ 129:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ARM GAS  /tmp/ccPlTcPl.s 			page 6
+
+
+ 115              		.loc 2 129 27 view .LVU32
+ 116              	.LBB33:
+ 131:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 117              		.loc 2 131 3 view .LVU33
+ 118              		.syntax unified
+ 119              	@ 131 "Drivers/CMSIS/Include/cmsis_gcc.h" 1
+ 120 0036 62B6     		cpsie i
+ 121              	@ 0 "" 2
+ 122              		.thumb
+ 123              		.syntax unified
+ 124              	.LBE33:
+ 125              	.LBE32:
+  15:Src/timer.c   **** }
+ 126              		.loc 1 15 1 is_stmt 0 view .LVU34
+ 127 0038 03B0     		add	sp, sp, #12
+ 128              	.LCFI2:
+ 129              		.cfi_def_cfa_offset 4
+ 130              		@ sp needed
+ 131 003a 5DF8044B 		ldr	r4, [sp], #4
+ 132              	.LCFI3:
+ 133              		.cfi_restore 4
+ 134              		.cfi_def_cfa_offset 0
+ 135 003e 7047     		bx	lr
+ 136              	.L5:
+ 137              		.align	2
+ 138              	.L4:
+ 139 0040 00380240 		.word	1073887232
+ 140              		.cfi_endproc
+ 141              	.LFE130:
+ 143              		.section	.text.timer_get_ticks,"ax",%progbits
+ 144              		.align	1
+ 145              		.p2align 2,,3
+ 146              		.global	timer_get_ticks
+ 147              		.syntax unified
+ 148              		.thumb
+ 149              		.thumb_func
+ 151              	timer_get_ticks:
+ 152              	.LFB131:
+  16:Src/timer.c   **** 
+  17:Src/timer.c   **** inline tTime timer_get_ticks()
+  18:Src/timer.c   **** {
+ 153              		.loc 1 18 1 is_stmt 1 view -0
+ 154              		.cfi_startproc
+ 155              		@ args = 0, pretend = 0, frame = 0
+ 156              		@ frame_needed = 0, uses_anonymous_args = 0
+ 157              		@ link register save eliminated.
+  19:Src/timer.c   ****     return TIM2->CNT;
+ 158              		.loc 1 19 5 view .LVU36
+ 159              		.loc 1 19 16 is_stmt 0 view .LVU37
+ 160 0000 4FF08043 		mov	r3, #1073741824
+ 161 0004 586A     		ldr	r0, [r3, #36]
+  20:Src/timer.c   **** }
+ 162              		.loc 1 20 1 view .LVU38
+ 163 0006 7047     		bx	lr
+ 164              		.cfi_endproc
+ 165              	.LFE131:
+ 167              		.section	.text.timer_us_to_ticks,"ax",%progbits
+ARM GAS  /tmp/ccPlTcPl.s 			page 7
+
+
+ 168              		.align	1
+ 169              		.p2align 2,,3
+ 170              		.global	timer_us_to_ticks
+ 171              		.syntax unified
+ 172              		.thumb
+ 173              		.thumb_func
+ 175              	timer_us_to_ticks:
+ 176              	.LVL0:
+ 177              	.LFB132:
+  21:Src/timer.c   **** 
+  22:Src/timer.c   **** tTime timer_us_to_ticks(uint32_t us)
+  23:Src/timer.c   **** {
+ 178              		.loc 1 23 1 is_stmt 1 view -0
+ 179              		.cfi_startproc
+ 180              		@ args = 0, pretend = 0, frame = 0
+ 181              		@ frame_needed = 0, uses_anonymous_args = 0
+ 182              		@ link register save eliminated.
+  24:Src/timer.c   ****     return (us * TIMER2_MICROSECOND);
+ 183              		.loc 1 24 5 view .LVU40
+ 184              		.loc 1 24 18 is_stmt 0 view .LVU41
+ 185 0000 044B     		ldr	r3, .L8
+ 186 0002 054A     		ldr	r2, .L8+4
+ 187 0004 1B68     		ldr	r3, [r3]
+ 188 0006 A2FB0323 		umull	r2, r3, r2, r3
+ 189 000a 9B0C     		lsrs	r3, r3, #18
+  25:Src/timer.c   **** }
+ 190              		.loc 1 25 1 view .LVU42
+ 191 000c 03FB00F0 		mul	r0, r3, r0
+ 192              	.LVL1:
+ 193              		.loc 1 25 1 view .LVU43
+ 194 0010 7047     		bx	lr
+ 195              	.L9:
+ 196 0012 00BF     		.align	2
+ 197              	.L8:
+ 198 0014 00000000 		.word	SystemCoreClock
+ 199 0018 83DE1B43 		.word	1125899907
+ 200              		.cfi_endproc
+ 201              	.LFE132:
+ 203              		.section	.text.timer_ms_to_ticks,"ax",%progbits
+ 204              		.align	1
+ 205              		.p2align 2,,3
+ 206              		.global	timer_ms_to_ticks
+ 207              		.syntax unified
+ 208              		.thumb
+ 209              		.thumb_func
+ 211              	timer_ms_to_ticks:
+ 212              	.LVL2:
+ 213              	.LFB133:
+  26:Src/timer.c   **** 
+  27:Src/timer.c   **** tTime timer_ms_to_ticks(uint32_t ms)
+  28:Src/timer.c   **** {
+ 214              		.loc 1 28 1 is_stmt 1 view -0
+ 215              		.cfi_startproc
+ 216              		@ args = 0, pretend = 0, frame = 0
+ 217              		@ frame_needed = 0, uses_anonymous_args = 0
+ 218              		@ link register save eliminated.
+  29:Src/timer.c   ****     return (ms * TIMER2_MILLISECOND);
+ARM GAS  /tmp/ccPlTcPl.s 			page 8
+
+
+ 219              		.loc 1 29 5 view .LVU45
+ 220              		.loc 1 29 18 is_stmt 0 view .LVU46
+ 221 0000 044B     		ldr	r3, .L11
+ 222 0002 054A     		ldr	r2, .L11+4
+ 223 0004 1B68     		ldr	r3, [r3]
+ 224 0006 A2FB0323 		umull	r2, r3, r2, r3
+ 225 000a 9B09     		lsrs	r3, r3, #6
+  30:Src/timer.c   **** }
+ 226              		.loc 1 30 1 view .LVU47
+ 227 000c 03FB00F0 		mul	r0, r3, r0
+ 228              	.LVL3:
+ 229              		.loc 1 30 1 view .LVU48
+ 230 0010 7047     		bx	lr
+ 231              	.L12:
+ 232 0012 00BF     		.align	2
+ 233              	.L11:
+ 234 0014 00000000 		.word	SystemCoreClock
+ 235 0018 D34D6210 		.word	274877907
+ 236              		.cfi_endproc
+ 237              	.LFE133:
+ 239              		.section	.text.timer_delay_us,"ax",%progbits
+ 240              		.align	1
+ 241              		.p2align 2,,3
+ 242              		.global	timer_delay_us
+ 243              		.syntax unified
+ 244              		.thumb
+ 245              		.thumb_func
+ 247              	timer_delay_us:
+ 248              	.LVL4:
+ 249              	.LFB134:
+  31:Src/timer.c   **** 
+  32:Src/timer.c   **** void timer_delay_us(uint32_t time)
+  33:Src/timer.c   **** {
+ 250              		.loc 1 33 1 is_stmt 1 view -0
+ 251              		.cfi_startproc
+ 252              		@ args = 0, pretend = 0, frame = 0
+ 253              		@ frame_needed = 0, uses_anonymous_args = 0
+ 254              		@ link register save eliminated.
+  34:Src/timer.c   ****     if(!time)
+ 255              		.loc 1 34 5 view .LVU50
+ 256              		.loc 1 34 7 is_stmt 0 view .LVU51
+ 257 0000 90B1     		cbz	r0, .L21
+  35:Src/timer.c   ****     {
+  36:Src/timer.c   ****         return;
+  37:Src/timer.c   ****     }
+  38:Src/timer.c   **** 
+  39:Src/timer.c   ****     tTime now = timer_get_ticks();
+ 258              		.loc 1 39 5 is_stmt 1 view .LVU52
+ 259              	.LBB34:
+ 260              	.LBI34:
+  17:Src/timer.c   **** {
+ 261              		.loc 1 17 14 view .LVU53
+ 262              	.LBB35:
+  19:Src/timer.c   **** }
+ 263              		.loc 1 19 5 view .LVU54
+ 264              	.LBE35:
+ 265              	.LBE34:
+ARM GAS  /tmp/ccPlTcPl.s 			page 9
+
+
+ 266              	.LBB38:
+ 267              	.LBB39:
+  24:Src/timer.c   **** }
+ 268              		.loc 1 24 18 is_stmt 0 view .LVU55
+ 269 0002 0A4A     		ldr	r2, .L24
+ 270 0004 0A4B     		ldr	r3, .L24+4
+ 271 0006 1268     		ldr	r2, [r2]
+ 272              	.LBE39:
+ 273              	.LBE38:
+ 274              	.LBB43:
+ 275              	.LBB36:
+  19:Src/timer.c   **** }
+ 276              		.loc 1 19 16 view .LVU56
+ 277 0008 4FF08041 		mov	r1, #1073741824
+ 278              	.LBE36:
+ 279              	.LBE43:
+ 280              	.LBB44:
+ 281              	.LBB40:
+  24:Src/timer.c   **** }
+ 282              		.loc 1 24 18 view .LVU57
+ 283 000c A3FB0232 		umull	r3, r2, r3, r2
+ 284              	.LBE40:
+ 285              	.LBE44:
+  33:Src/timer.c   ****     if(!time)
+ 286              		.loc 1 33 1 view .LVU58
+ 287 0010 10B4     		push	{r4}
+ 288              	.LCFI4:
+ 289              		.cfi_def_cfa_offset 4
+ 290              		.cfi_offset 4, -4
+ 291              	.LBB45:
+ 292              	.LBB41:
+  24:Src/timer.c   **** }
+ 293              		.loc 1 24 18 view .LVU59
+ 294 0012 920C     		lsrs	r2, r2, #18
+ 295              	.LBE41:
+ 296              	.LBE45:
+ 297              	.LBB46:
+ 298              	.LBB37:
+  19:Src/timer.c   **** }
+ 299              		.loc 1 19 16 view .LVU60
+ 300 0014 4C6A     		ldr	r4, [r1, #36]
+ 301              	.LVL5:
+  19:Src/timer.c   **** }
+ 302              		.loc 1 19 16 view .LVU61
+ 303              	.LBE37:
+ 304              	.LBE46:
+  40:Src/timer.c   ****     time = timer_us_to_ticks(time);
+ 305              		.loc 1 40 5 is_stmt 1 view .LVU62
+ 306              	.LBB47:
+ 307              	.LBI38:
+  22:Src/timer.c   **** {
+ 308              		.loc 1 22 7 view .LVU63
+ 309              	.LBB42:
+  24:Src/timer.c   **** }
+ 310              		.loc 1 24 5 view .LVU64
+  24:Src/timer.c   **** }
+ 311              		.loc 1 24 16 is_stmt 0 view .LVU65
+ARM GAS  /tmp/ccPlTcPl.s 			page 10
+
+
+ 312 0016 00FB02F2 		mul	r2, r0, r2
+ 313              	.LVL6:
+  24:Src/timer.c   **** }
+ 314              		.loc 1 24 16 view .LVU66
+ 315              	.LBE42:
+ 316              	.LBE47:
+  41:Src/timer.c   **** 
+  42:Src/timer.c   ****     while(timer_time_passed(now) < time)
+ 317              		.loc 1 42 5 is_stmt 1 view .LVU67
+ 318              	.L15:
+  43:Src/timer.c   ****     {
+  44:Src/timer.c   ****         // do nothing
+  45:Src/timer.c   ****     }
+ 319              		.loc 1 45 5 view .LVU68
+  42:Src/timer.c   ****     {
+ 320              		.loc 1 42 34 discriminator 1 view .LVU69
+ 321              	.LBB48:
+ 322              	.LBI48:
+  46:Src/timer.c   **** }
+  47:Src/timer.c   **** 
+  48:Src/timer.c   **** void timer_delay_ms(uint32_t time)
+  49:Src/timer.c   **** {
+  50:Src/timer.c   ****     if(!time)
+  51:Src/timer.c   ****     {
+  52:Src/timer.c   ****         return;
+  53:Src/timer.c   ****     }
+  54:Src/timer.c   **** 
+  55:Src/timer.c   ****     tTime now = timer_get_ticks();
+  56:Src/timer.c   ****     time = timer_ms_to_ticks(time);
+  57:Src/timer.c   **** 
+  58:Src/timer.c   ****     while(timer_time_passed(now) < time)
+  59:Src/timer.c   ****     {
+  60:Src/timer.c   ****         // do nothing
+  61:Src/timer.c   ****     }
+  62:Src/timer.c   **** }
+  63:Src/timer.c   **** 
+  64:Src/timer.c   **** 
+  65:Src/timer.c   **** tTime timer_time_passed(tTime since)
+ 323              		.loc 1 65 7 view .LVU70
+ 324              	.LBB49:
+  66:Src/timer.c   **** {
+  67:Src/timer.c   ****     tTime now = timer_get_ticks();
+ 325              		.loc 1 67 5 view .LVU71
+ 326              	.LBB50:
+ 327              	.LBI50:
+  17:Src/timer.c   **** {
+ 328              		.loc 1 17 14 view .LVU72
+ 329              	.LBB51:
+  19:Src/timer.c   **** }
+ 330              		.loc 1 19 5 view .LVU73
+  19:Src/timer.c   **** }
+ 331              		.loc 1 19 16 is_stmt 0 view .LVU74
+ 332 001a 4B6A     		ldr	r3, [r1, #36]
+ 333              	.LVL7:
+  19:Src/timer.c   **** }
+ 334              		.loc 1 19 16 view .LVU75
+ 335              	.LBE51:
+ARM GAS  /tmp/ccPlTcPl.s 			page 11
+
+
+ 336              	.LBE50:
+  68:Src/timer.c   **** 
+  69:Src/timer.c   **** 	if(now >= since)
+ 337              		.loc 1 69 2 is_stmt 1 view .LVU76
+  70:Src/timer.c   **** 	{
+  71:Src/timer.c   **** 		return (now - since);
+  72:Src/timer.c   **** 	}
+  73:Src/timer.c   **** 	else
+  74:Src/timer.c   **** 	{
+  75:Src/timer.c   **** 		// rollover has occured
+  76:Src/timer.c   **** 		return (now + (1 + MAX_TIME - since));
+ 338              		.loc 1 76 3 view .LVU77
+  71:Src/timer.c   **** 	}
+ 339              		.loc 1 71 15 is_stmt 0 view .LVU78
+ 340 001c 1B1B     		subs	r3, r3, r4
+ 341              	.LVL8:
+  71:Src/timer.c   **** 	}
+ 342              		.loc 1 71 15 view .LVU79
+ 343              	.LBE49:
+ 344              	.LBE48:
+  42:Src/timer.c   ****     {
+ 345              		.loc 1 42 34 discriminator 1 view .LVU80
+ 346 001e 9342     		cmp	r3, r2
+ 347 0020 FBD3     		bcc	.L15
+  46:Src/timer.c   **** 
+ 348              		.loc 1 46 1 view .LVU81
+ 349 0022 5DF8044B 		ldr	r4, [sp], #4
+ 350              	.LCFI5:
+ 351              		.cfi_restore 4
+ 352              		.cfi_def_cfa_offset 0
+ 353              	.LVL9:
+  46:Src/timer.c   **** 
+ 354              		.loc 1 46 1 view .LVU82
+ 355 0026 7047     		bx	lr
+ 356              	.LVL10:
+ 357              	.L21:
+  46:Src/timer.c   **** 
+ 358              		.loc 1 46 1 view .LVU83
+ 359 0028 7047     		bx	lr
+ 360              	.L25:
+ 361 002a 00BF     		.align	2
+ 362              	.L24:
+ 363 002c 00000000 		.word	SystemCoreClock
+ 364 0030 83DE1B43 		.word	1125899907
+ 365              		.cfi_endproc
+ 366              	.LFE134:
+ 368              		.section	.text.timer_delay_ms,"ax",%progbits
+ 369              		.align	1
+ 370              		.p2align 2,,3
+ 371              		.global	timer_delay_ms
+ 372              		.syntax unified
+ 373              		.thumb
+ 374              		.thumb_func
+ 376              	timer_delay_ms:
+ 377              	.LVL11:
+ 378              	.LFB135:
+  49:Src/timer.c   ****     if(!time)
+ARM GAS  /tmp/ccPlTcPl.s 			page 12
+
+
+ 379              		.loc 1 49 1 is_stmt 1 view -0
+ 380              		.cfi_startproc
+ 381              		@ args = 0, pretend = 0, frame = 0
+ 382              		@ frame_needed = 0, uses_anonymous_args = 0
+ 383              		@ link register save eliminated.
+  50:Src/timer.c   ****     {
+ 384              		.loc 1 50 5 view .LVU85
+  50:Src/timer.c   ****     {
+ 385              		.loc 1 50 7 is_stmt 0 view .LVU86
+ 386 0000 90B1     		cbz	r0, .L34
+  55:Src/timer.c   ****     time = timer_ms_to_ticks(time);
+ 387              		.loc 1 55 5 is_stmt 1 view .LVU87
+ 388              	.LBB52:
+ 389              	.LBI52:
+  17:Src/timer.c   **** {
+ 390              		.loc 1 17 14 view .LVU88
+ 391              	.LBB53:
+  19:Src/timer.c   **** }
+ 392              		.loc 1 19 5 view .LVU89
+ 393              	.LBE53:
+ 394              	.LBE52:
+ 395              	.LBB56:
+ 396              	.LBB57:
+  29:Src/timer.c   **** }
+ 397              		.loc 1 29 18 is_stmt 0 view .LVU90
+ 398 0002 0A4A     		ldr	r2, .L37
+ 399 0004 0A4B     		ldr	r3, .L37+4
+ 400 0006 1268     		ldr	r2, [r2]
+ 401              	.LBE57:
+ 402              	.LBE56:
+ 403              	.LBB61:
+ 404              	.LBB54:
+  19:Src/timer.c   **** }
+ 405              		.loc 1 19 16 view .LVU91
+ 406 0008 4FF08041 		mov	r1, #1073741824
+ 407              	.LBE54:
+ 408              	.LBE61:
+ 409              	.LBB62:
+ 410              	.LBB58:
+  29:Src/timer.c   **** }
+ 411              		.loc 1 29 18 view .LVU92
+ 412 000c A3FB0232 		umull	r3, r2, r3, r2
+ 413              	.LBE58:
+ 414              	.LBE62:
+  49:Src/timer.c   ****     if(!time)
+ 415              		.loc 1 49 1 view .LVU93
+ 416 0010 10B4     		push	{r4}
+ 417              	.LCFI6:
+ 418              		.cfi_def_cfa_offset 4
+ 419              		.cfi_offset 4, -4
+ 420              	.LBB63:
+ 421              	.LBB59:
+  29:Src/timer.c   **** }
+ 422              		.loc 1 29 18 view .LVU94
+ 423 0012 9209     		lsrs	r2, r2, #6
+ 424              	.LBE59:
+ 425              	.LBE63:
+ARM GAS  /tmp/ccPlTcPl.s 			page 13
+
+
+ 426              	.LBB64:
+ 427              	.LBB55:
+  19:Src/timer.c   **** }
+ 428              		.loc 1 19 16 view .LVU95
+ 429 0014 4C6A     		ldr	r4, [r1, #36]
+ 430              	.LVL12:
+  19:Src/timer.c   **** }
+ 431              		.loc 1 19 16 view .LVU96
+ 432              	.LBE55:
+ 433              	.LBE64:
+  56:Src/timer.c   **** 
+ 434              		.loc 1 56 5 is_stmt 1 view .LVU97
+ 435              	.LBB65:
+ 436              	.LBI56:
+  27:Src/timer.c   **** {
+ 437              		.loc 1 27 7 view .LVU98
+ 438              	.LBB60:
+  29:Src/timer.c   **** }
+ 439              		.loc 1 29 5 view .LVU99
+  29:Src/timer.c   **** }
+ 440              		.loc 1 29 16 is_stmt 0 view .LVU100
+ 441 0016 00FB02F2 		mul	r2, r0, r2
+ 442              	.LVL13:
+  29:Src/timer.c   **** }
+ 443              		.loc 1 29 16 view .LVU101
+ 444              	.LBE60:
+ 445              	.LBE65:
+  58:Src/timer.c   ****     {
+ 446              		.loc 1 58 5 is_stmt 1 view .LVU102
+ 447              	.L28:
+  61:Src/timer.c   **** }
+ 448              		.loc 1 61 5 view .LVU103
+  58:Src/timer.c   ****     {
+ 449              		.loc 1 58 34 discriminator 1 view .LVU104
+ 450              	.LBB66:
+ 451              	.LBI66:
+  65:Src/timer.c   **** {
+ 452              		.loc 1 65 7 view .LVU105
+ 453              	.LBB67:
+  67:Src/timer.c   **** 
+ 454              		.loc 1 67 5 view .LVU106
+ 455              	.LBB68:
+ 456              	.LBI68:
+  17:Src/timer.c   **** {
+ 457              		.loc 1 17 14 view .LVU107
+ 458              	.LBB69:
+  19:Src/timer.c   **** }
+ 459              		.loc 1 19 5 view .LVU108
+  19:Src/timer.c   **** }
+ 460              		.loc 1 19 16 is_stmt 0 view .LVU109
+ 461 001a 4B6A     		ldr	r3, [r1, #36]
+ 462              	.LVL14:
+  19:Src/timer.c   **** }
+ 463              		.loc 1 19 16 view .LVU110
+ 464              	.LBE69:
+ 465              	.LBE68:
+  69:Src/timer.c   **** 	{
+ARM GAS  /tmp/ccPlTcPl.s 			page 14
+
+
+ 466              		.loc 1 69 2 is_stmt 1 view .LVU111
+ 467              		.loc 1 76 3 view .LVU112
+  71:Src/timer.c   **** 	}
+ 468              		.loc 1 71 15 is_stmt 0 view .LVU113
+ 469 001c 1B1B     		subs	r3, r3, r4
+ 470              	.LVL15:
+  71:Src/timer.c   **** 	}
+ 471              		.loc 1 71 15 view .LVU114
+ 472              	.LBE67:
+ 473              	.LBE66:
+  58:Src/timer.c   ****     {
+ 474              		.loc 1 58 34 discriminator 1 view .LVU115
+ 475 001e 9342     		cmp	r3, r2
+ 476 0020 FBD3     		bcc	.L28
+  62:Src/timer.c   **** 
+ 477              		.loc 1 62 1 view .LVU116
+ 478 0022 5DF8044B 		ldr	r4, [sp], #4
+ 479              	.LCFI7:
+ 480              		.cfi_restore 4
+ 481              		.cfi_def_cfa_offset 0
+ 482              	.LVL16:
+  62:Src/timer.c   **** 
+ 483              		.loc 1 62 1 view .LVU117
+ 484 0026 7047     		bx	lr
+ 485              	.LVL17:
+ 486              	.L34:
+  62:Src/timer.c   **** 
+ 487              		.loc 1 62 1 view .LVU118
+ 488 0028 7047     		bx	lr
+ 489              	.L38:
+ 490 002a 00BF     		.align	2
+ 491              	.L37:
+ 492 002c 00000000 		.word	SystemCoreClock
+ 493 0030 D34D6210 		.word	274877907
+ 494              		.cfi_endproc
+ 495              	.LFE135:
+ 497              		.section	.text.timer_time_passed,"ax",%progbits
+ 498              		.align	1
+ 499              		.p2align 2,,3
+ 500              		.global	timer_time_passed
+ 501              		.syntax unified
+ 502              		.thumb
+ 503              		.thumb_func
+ 505              	timer_time_passed:
+ 506              	.LVL18:
+ 507              	.LFB136:
+  66:Src/timer.c   ****     tTime now = timer_get_ticks();
+ 508              		.loc 1 66 1 is_stmt 1 view -0
+ 509              		.cfi_startproc
+ 510              		@ args = 0, pretend = 0, frame = 0
+ 511              		@ frame_needed = 0, uses_anonymous_args = 0
+ 512              		@ link register save eliminated.
+  67:Src/timer.c   **** 
+ 513              		.loc 1 67 5 view .LVU120
+ 514              	.LBB70:
+ 515              	.LBI70:
+  17:Src/timer.c   **** {
+ARM GAS  /tmp/ccPlTcPl.s 			page 15
+
+
+ 516              		.loc 1 17 14 view .LVU121
+ 517              	.LBB71:
+  19:Src/timer.c   **** }
+ 518              		.loc 1 19 5 view .LVU122
+  19:Src/timer.c   **** }
+ 519              		.loc 1 19 16 is_stmt 0 view .LVU123
+ 520 0000 4FF08043 		mov	r3, #1073741824
+ 521 0004 5B6A     		ldr	r3, [r3, #36]
+ 522              	.LVL19:
+  19:Src/timer.c   **** }
+ 523              		.loc 1 19 16 view .LVU124
+ 524              	.LBE71:
+ 525              	.LBE70:
+  69:Src/timer.c   **** 	{
+ 526              		.loc 1 69 2 is_stmt 1 view .LVU125
+ 527              		.loc 1 76 3 view .LVU126
+  77:Src/timer.c   **** 	}
+  78:Src/timer.c   **** }...
+ 528              		.loc 1 78 1 is_stmt 0 view .LVU127
+ 529 0006 181A     		subs	r0, r3, r0
+ 530              	.LVL20:
+ 531              		.loc 1 78 1 view .LVU128
+ 532 0008 7047     		bx	lr
+ 533              		.cfi_endproc
+ 534              	.LFE136:
+ 536 000a 00BF     		.text
+ 537              	.Letext0:
+ 538              		.file 3 "/usr/arm-none-eabi/include/machine/_default_types.h"
+ 539              		.file 4 "/usr/arm-none-eabi/include/sys/_stdint.h"
+ 540              		.file 5 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f401xc.h"
+ 541              		.file 6 "Inc/timer.h"
+ 542              		.file 7 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/system_stm32f4xx.h"
+ARM GAS  /tmp/ccPlTcPl.s 			page 16
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 timer.c
+     /tmp/ccPlTcPl.s:19     .text.timer_init:00000000 $t
+     /tmp/ccPlTcPl.s:26     .text.timer_init:00000000 timer_init
+     /tmp/ccPlTcPl.s:139    .text.timer_init:00000040 $d
+     /tmp/ccPlTcPl.s:144    .text.timer_get_ticks:00000000 $t
+     /tmp/ccPlTcPl.s:151    .text.timer_get_ticks:00000000 timer_get_ticks
+     /tmp/ccPlTcPl.s:168    .text.timer_us_to_ticks:00000000 $t
+     /tmp/ccPlTcPl.s:175    .text.timer_us_to_ticks:00000000 timer_us_to_ticks
+     /tmp/ccPlTcPl.s:198    .text.timer_us_to_ticks:00000014 $d
+     /tmp/ccPlTcPl.s:204    .text.timer_ms_to_ticks:00000000 $t
+     /tmp/ccPlTcPl.s:211    .text.timer_ms_to_ticks:00000000 timer_ms_to_ticks
+     /tmp/ccPlTcPl.s:234    .text.timer_ms_to_ticks:00000014 $d
+     /tmp/ccPlTcPl.s:240    .text.timer_delay_us:00000000 $t
+     /tmp/ccPlTcPl.s:247    .text.timer_delay_us:00000000 timer_delay_us
+     /tmp/ccPlTcPl.s:363    .text.timer_delay_us:0000002c $d
+     /tmp/ccPlTcPl.s:369    .text.timer_delay_ms:00000000 $t
+     /tmp/ccPlTcPl.s:376    .text.timer_delay_ms:00000000 timer_delay_ms
+     /tmp/ccPlTcPl.s:492    .text.timer_delay_ms:0000002c $d
+     /tmp/ccPlTcPl.s:498    .text.timer_time_passed:00000000 $t
+     /tmp/ccPlTcPl.s:505    .text.timer_time_passed:00000000 timer_time_passed
+
+UNDEFINED SYMBOLS
+SystemCoreClock

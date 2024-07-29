@@ -1,0 +1,9 @@
+{
+	"C_Cpp.default.compilerPath": "/usr/bin/arm-none-eabi-g++",
+	"editor.suggestOnTriggerCharacters": false,
+	"editor.quickSuggestions": {
+	"other": false,
+	"comments": false,
+	"strings": false
+	}
+}

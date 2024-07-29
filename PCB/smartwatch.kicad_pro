@@ -41,11 +41,11 @@
           "height": 1.524,
           "width": 1.524
         },
-        "silk_line_width": 0.15,
+        "silk_line_width": 0.153,
         "silk_text_italic": false,
-        "silk_text_size_h": 0.5,
-        "silk_text_size_v": 0.5,
-        "silk_text_thickness": 0.1,
+        "silk_text_size_h": 0.62,
+        "silk_text_size_v": 1.0,
+        "silk_text_thickness": 0.153,
         "silk_text_upright": false,
         "zones": {
           "min_clearance": 0.5
@@ -58,7 +58,16 @@
           "width": 0.0
         }
       ],
-      "drc_exclusions": [],
+      "drc_exclusions": [
+        "isolated_copper|158316885|76350421|ee9d5c14-97a8-4fc0-ae19-59f379184227|00000000-0000-0000-0000-000000000000",
+        "lib_footprint_mismatch|150400000|80800000|55b3989f-8402-4596-90c6-a8336fb20078|00000000-0000-0000-0000-000000000000",
+        "lib_footprint_mismatch|155472000|89740800|a230294c-9bb7-4943-b938-e67ec1663ae1|00000000-0000-0000-0000-000000000000",
+        "lib_footprint_mismatch|155500000|97350000|053b8e0b-fff4-4e77-b238-713b82bcf85d|00000000-0000-0000-0000-000000000000",
+        "lib_footprint_mismatch|155600000|104010000|0954b495-8292-4df7-84e2-b2b8a2e64675|00000000-0000-0000-0000-000000000000",
+        "silk_edge_clearance|139483287|93636000|4d1cbe4b-0a1a-45fa-a0fb-2fdb4ccaf60d|420f18b9-ab50-4303-8de3-5db7bb703838",
+        "silk_over_copper|150126600|88966800|3334dc52-0aba-4457-a8ae-1c727b02edf2|00000000-0000-0000-0000-000000000000",
+        "silk_over_copper|151876600|88966800|a7339a96-7984-4f79-89f3-7aee0e94ccfb|00000000-0000-0000-0000-000000000000"
+      ],
       "meta": {
         "version": 2
       },
@@ -79,6 +88,7 @@
         "footprint_type_mismatch": "ignore",
         "hole_clearance": "error",
         "hole_near_hole": "error",
+        "holes_co_located": "warning",
         "invalid_outline": "error",
         "isolated_copper": "warning",
         "item_on_disabled_layer": "error",
@@ -123,12 +133,12 @@
         "min_microvia_diameter": 0.254,
         "min_microvia_drill": 0.15,
         "min_resolved_spokes": 2,
-        "min_silk_clearance": 0.0,
-        "min_text_height": 0.8,
-        "min_text_thickness": 0.08,
+        "min_silk_clearance": 0.15,
+        "min_text_height": 1.0,
+        "min_text_thickness": 0.153,
         "min_through_hole_diameter": 0.3,
         "min_track_width": 0.11,
-        "min_via_annular_width": 0.11,
+        "min_via_annular_width": 0.13,
         "min_via_diameter": 0.254,
         "solder_mask_clearance": 0.0,
         "solder_mask_min_width": 0.0,
@@ -217,12 +227,12 @@
           "drill": 0.0
         },
         {
-          "diameter": 0.254,
-          "drill": 0.2
+          "diameter": 0.45,
+          "drill": 0.3
         },
         {
           "diameter": 0.5,
-          "drill": 0.3
+          "drill": 0.2
         },
         {
           "diameter": 1.0,
@@ -246,7 +256,12 @@
     "equivalence_files": []
   },
   "erc": {
-    "erc_exclusions": [],
+    "erc_exclusions": [
+      "pin_not_connected|2108200|1219200|af3a14aa-6ab4-4c73-ac86-9c58a0a79072|00000000-0000-0000-0000-000000000000|/e7c57f9c-7001-4737-affb-7e8afa9e72a0|/e7c57f9c-7001-4737-affb-7e8afa9e72a0|",
+      "pin_not_connected|2108200|1244600|da353d48-d50d-4e95-835e-a899b95ba770|00000000-0000-0000-0000-000000000000|/e7c57f9c-7001-4737-affb-7e8afa9e72a0|/e7c57f9c-7001-4737-affb-7e8afa9e72a0|",
+      "pin_not_connected|2108200|1270000|dce4295f-8f78-4663-a6eb-36a4810e2ab9|00000000-0000-0000-0000-000000000000|/e7c57f9c-7001-4737-affb-7e8afa9e72a0|/e7c57f9c-7001-4737-affb-7e8afa9e72a0|",
+      "power_pin_not_driven|2552700|1409700|8e8db3c8-1992-4e23-b9c7-4600e115b4a5|00000000-0000-0000-0000-000000000000|/e7c57f9c-7001-4737-affb-7e8afa9e72a0|/e7c57f9c-7001-4737-affb-7e8afa9e72a0|"
+    ],
     "meta": {
       "version": 0
     },
@@ -468,7 +483,7 @@
     "classes": [
       {
         "bus_width": 12,
-        "clearance": 0.2,
+        "clearance": 0.127,
         "diff_pair_gap": 0.25,
         "diff_pair_via_gap": 0.25,
         "diff_pair_width": 0.2,
@@ -507,6 +522,7 @@
   },
   "schematic": {
     "annotate_start_num": 0,
+    "bom_export_filename": "",
     "bom_fmt_presets": [],
     "bom_fmt_settings": {
       "field_delimiter": ",",
@@ -592,6 +608,14 @@
       "version": 1
     },
     "net_format_name": "",
+    "ngspice": {
+      "fix_include_paths": true,
+      "meta": {
+        "version": 0
+      },
+      "model_mode": 4,
+      "workbook_filename": ""
+    },
     "page_layout_descr_file": "",
     "plot_directory": "",
     "spice_current_sheet_as_root": false,
