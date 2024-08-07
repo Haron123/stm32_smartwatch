@@ -5555,12 +5555,6 @@
 		(uuid "c2faa7ea-4e31-4461-848d-51b0d2d1136e")
 	)
 	(junction
-		(at 113.03 88.9)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "d2301f62-6c80-4d30-8ab3-d17fcf671961")
-	)
-	(junction
 		(at 35.56 96.52)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -5623,16 +5617,6 @@
 	(no_connect
 		(at 185.42 137.16)
 		(uuid "ee22b986-9ee0-40bd-8bc0-bf05a6a60f27")
-	)
-	(wire
-		(pts
-			(xy 185.42 121.92) (xy 185.42 119.38)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "03ae5f0d-836c-432a-bf32-7217029765c4")
 	)
 	(wire
 		(pts
@@ -5823,16 +5807,6 @@
 			(type default)
 		)
 		(uuid "2fb98378-ed9f-4727-8de3-6751d28b8f9a")
-	)
-	(wire
-		(pts
-			(xy 185.42 129.54) (xy 185.42 127)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "308dc7cf-a424-49b3-be5b-692104661ea3")
 	)
 	(wire
 		(pts
@@ -6788,16 +6762,6 @@
 		)
 		(uuid ec1f69d9-f271-4076-8321-98a4e1396b69)
 	)
-	(text "Cheap Short \nProtection"
-		(exclude_from_sim no)
-		(at 109.982 82.55 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "3152ced4-2425-4f5a-acdd-218fd9a277bf")
-	)
 	(text "I2C Address: 1000000b"
 		(exclude_from_sim no)
 		(at 184.15 153.416 0)
@@ -7373,7 +7337,7 @@
 			)
 		)
 	)
-	(global_label "USB_DP"
+	(global_label "USB_D+"
 		(shape input)
 		(at 66.04 139.7 0)
 		(fields_autoplaced yes)
@@ -7593,28 +7557,6 @@
 			)
 		)
 	)
-	(global_label "TP_RST"
-		(shape input)
-		(at 132.08 116.84 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "76450b81-4298-48e2-8a23-e98926979f7b")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 122.4425 116.84 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "LCD_NSS"
 		(shape input)
 		(at 151.13 180.34 90)
@@ -7659,7 +7601,7 @@
 			)
 		)
 	)
-	(global_label "USB_DP"
+	(global_label "USB_D+"
 		(shape input)
 		(at 157.48 114.3 0)
 		(fields_autoplaced yes)
@@ -7826,28 +7768,6 @@
 		(uuid "957f9592-c672-4069-9738-c0f6c7169796")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 119.9629 111.76 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "VDD"
-		(shape input)
-		(at 97.79 88.9 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "97c6fcdb-b992-4a8b-83af-7fbd17f2d70e")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 91.1762 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8231,6 +8151,28 @@
 			)
 		)
 	)
+	(global_label "LCD_RST"
+		(shape input)
+		(at 143.51 180.34 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "c82071e4-81d0-436a-aa50-dea1fc5f5e99")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 143.51 169.372 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "TP_INT"
 		(shape input)
 		(at 132.08 114.3 180)
@@ -8244,6 +8186,28 @@
 		(uuid "c9a8ac38-a1ff-41f9-a800-a43cc758274a")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 122.9867 114.3 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "LCD_RST"
+		(shape input)
+		(at 132.08 116.84 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "c9fb2d82-7380-4ebc-adf2-8bd1457a31f5")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 121.112 116.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8385,28 +8349,6 @@
 			)
 		)
 	)
-	(global_label "RST"
-		(shape input)
-		(at 143.51 180.34 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "d9cd1ea2-7f90-4650-a54c-4c0adc18c381")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 143.51 173.9077 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "I2C1_SDA"
 		(shape input)
 		(at 210.82 132.08 0)
@@ -8486,6 +8428,28 @@
 		(uuid "dd8c8fe9-4e7e-4d09-9818-451681c8dfac")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 151.13 61.1195 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "LCD_RST"
+		(shape input)
+		(at 135.89 180.34 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "e1cc9fba-576c-41cd-82f3-7b4ee6d933f0")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 135.89 169.372 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8671,28 +8635,6 @@
 			)
 		)
 	)
-	(global_label "TP_RST"
-		(shape input)
-		(at 135.89 180.34 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "f27c8fb2-bb5d-421b-9fdf-459af4178f1c")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 135.89 170.7025 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "VDD"
 		(shape input)
 		(at 140.97 180.34 90)
@@ -8737,7 +8679,7 @@
 			)
 		)
 	)
-	(global_label "USB_DM"
+	(global_label "USB_D-"
 		(shape input)
 		(at 157.48 111.76 0)
 		(fields_autoplaced yes)
@@ -8759,7 +8701,7 @@
 			)
 		)
 	)
-	(global_label "USB_DM"
+	(global_label "USB_D-"
 		(shape input)
 		(at 66.04 142.24 0)
 		(fields_autoplaced yes)
@@ -9369,73 +9311,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:R")
-		(at 101.6 88.9 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "38369c5b-d5b1-4e41-84d9-9df93d7e15ce")
-		(property "Reference" "R8"
-			(at 101.346 85.09 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "[Jumper]"
-			(at 101.346 86.614 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
-			(at 101.6 90.678 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 101.6 88.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 101.6 88.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "91f0080e-329b-4b4c-811c-450cfdf86978")
-		)
-		(pin "2"
-			(uuid "ccc6ec09-e994-4a72-affb-c0f82fec65cb")
-		)
-		(instances
-			(project "smartwatch"
-				(path "/e7c57f9c-7001-4737-affb-7e8afa9e72a0"
-					(reference "R8")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Oscillator:ASCO")
 		(at 214.63 53.34 0)
 		(unit 1)
@@ -10006,7 +9881,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Diode_SMD:D_0201_0603Metric"
+		(property "Footprint" "Diode_SMD:D_0603_1608Metric"
 			(at 40.64 130.81 0)
 			(effects
 				(font
@@ -10387,7 +10262,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Diode_SMD:D_0201_0603Metric"
+		(property "Footprint" "Diode_SMD:D_0603_1608Metric"
 			(at 254 107.95 0)
 			(effects
 				(font
@@ -11078,7 +10953,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_FFC-FPC:TE_1-1734839-5_1x15-1MP_P0.5mm_Horizontal"
+		(property "Footprint" "MyButtons:FPC-SMD_15P-P0.50_KH-FG0.5-H2.0-15P-SMT"
 			(at 146.05 185.42 0)
 			(effects
 				(font
@@ -11221,73 +11096,6 @@
 			(project "smartwatch"
 				(path "/e7c57f9c-7001-4737-affb-7e8afa9e72a0"
 					(reference "#PWR013")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 109.22 88.9 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "9b6c2cfe-c5ca-4e15-9633-e1dd21a9ede7")
-		(property "Reference" "R9"
-			(at 108.966 85.09 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "4.7k"
-			(at 109.22 86.868 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
-			(at 109.22 90.678 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 109.22 88.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 109.22 88.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "149aec74-a0a1-4773-829d-94dc951c97e8")
-		)
-		(pin "2"
-			(uuid "852ab5a9-28a6-4bfe-8cc7-aa9e563329e6")
-		)
-		(instances
-			(project "smartwatch"
-				(path "/e7c57f9c-7001-4737-affb-7e8afa9e72a0"
-					(reference "R9")
 					(unit 1)
 				)
 			)
@@ -11701,15 +11509,15 @@
 	(symbol
 		(lib_id "Power_Protection:USBLC6-2SC6")
 		(at 53.34 139.7 0)
+		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "b47a0773-27de-48fa-8b0b-856cc72ac4c3")
 		(property "Reference" "U8"
-			(at 54.9911 132.08 0)
+			(at 63.754 130.81 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11718,7 +11526,7 @@
 			)
 		)
 		(property "Value" "USBLC6-2SC6"
-			(at 54.9911 134.62 0)
+			(at 63.754 133.35 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11727,7 +11535,7 @@
 			)
 		)
 		(property "Footprint" "Package_TO_SOT_SMD:SOT-23-6"
-			(at 54.61 146.05 0)
+			(at 52.07 146.05 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11738,7 +11546,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.st.com/resource/en/datasheet/usblc6-2.pdf"
-			(at 54.61 147.955 0)
+			(at 52.07 147.955 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12902,7 +12710,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Connector_FFC-FPC:TE_0-1734839-5_1x05-1MP_P0.5mm_Horizontal"
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical"
 			(at 95.25 185.42 0)
 			(effects
 				(font
